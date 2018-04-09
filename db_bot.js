@@ -11,9 +11,9 @@ var bot = new Discord.Client({
 
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -47,18 +47,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 				    getTimeFromDb(user,channelID,userID,time_result);
 				break;
                 case 'ban':
-                    bot.sendMessage({
-                        to: channelID,
-                        message: removeUserFromDB(user,userID,channelID),
-                    });
+                    removeUserFromDB(user,userID,channelID);
                 break;
                 case 'remove':
-                    bot.sendMessage({
-                        to: channelID,
-                        // args[0] now is the next argument since we splice it by space
-                        message: removeUserFromDB(args[0],userID,channelID),
-                    });
-                    break;
+                    // args[0] now is the next argument since we splice it by space
+                    removeUserFromDB(args[0],userID,channelID);
+                break;
+                case 'credit':
+                    getCreditFromDB(printCredits,user,userID,channelID);
+                break;
 				default:
 					bot.sendMessage({
 						to: channelID,
@@ -196,11 +193,59 @@ function removeUserFromDB(userName,userID,channelID){
             });
         }
         else{
-            bot.sendMessage({
-                to: channelID,
-                message: "<@!" + userID + ">" + ' Data has been successfully removed!',
-            });
+            if(!Array.isArray(result) || !result.length){
+                bot.sendMessage({
+                    to: channelID,
+                    message: "<@!" + userID + ">" + ' The data you requested for delete does not exist',
+                });
+            }
+            else {
+                bot.sendMessage({
+                    to: channelID,
+                    message: "<@!" + userID + ">" + ' Data has been successfully removed!',
+                });
+            }
         }
     });
 }
 
+/**
+ * Get the user credit from the database and display to them the number of credit they have
+ * @callback cb - the call back function that is responsible for printing the message to the user
+ * @param userName - the user name on the discord forum
+ * @param userID - the user id on discord
+ * @param channelID - the channel to print the message to
+ */
+function getCreditFromDB(cb,userName,userID,channelID){
+    let sql = "select * from users where name = " + "\'" + userName + "\'";
+    let operation_result = false;
+    con.query(sql, function(err, result){
+        if(err) {
+            console.log(err);
+            return;
+        }
+        if(!Array.isArray(result) || !result.length){
+            bot.sendMessage({
+               to: channelID,
+               message: "<@!" + userID + ">" + ' Your data does not exist! I recommend you to register by typing !daily',
+            });
+        }
+        else {
+            let credit = result[0].credit;
+            return cb(credit, userID, channelID);
+        }
+    });
+}
+
+/**
+ * Print out the credit value a user has
+ * @param creditValue - the credit amount a user has
+ * @param userID - the user id on discord
+ * @param channelID - the channel to print message to
+ */
+function printCredits(creditValue,userID,channelID){
+    bot.sendMessage({
+       to: channelID,
+       message: "<@!" + userID + ">" + ' Your credit amount is: ' + creditValue,
+    });
+}
