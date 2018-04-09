@@ -35,12 +35,12 @@ Function to mark the bot purpose is to send message while it is on
  * @param {function} evt - event to do something extra, a potential callback
  */
 bot.on('message', function (user, userID, channelID, message, evt) {
-	if(channelID == 408777732579917824){
+	if(channelID === 408777732579917824){
 		// Our bot needs to know if it will execute a command
 		// It will listen for messages that will start with `!`
 		if (message.substring(0, 1) == '!') {
-			var args = message.substring(1).split(' ');
-			var cmd = args[0]; 
+			let args = message.substring(1).split(' ');
+			let cmd = args[0];
 			args = args.splice(1);
 			switch(cmd) {
 				case 'daily':
@@ -71,8 +71,8 @@ Gets the last login time of user from the database based on their user name
 @param {function} callback - a callback function depending on the result of the checking, most likely time_result()
  */
 function getTimeFromDb(userName,channelID,userID,callback){
-    var sql = "select * from users where name = " + "\'" + userName + "\'";
-    var operation_result = false;
+    let sql = "select * from users where name = " + "\'" + userName + "\'";
+    let operation_result = false;
 	con.query(sql, function(err, result){
 		if(err) {
             console.log(err);
@@ -82,8 +82,8 @@ function getTimeFromDb(userName,channelID,userID,callback){
             insertNewDataToDB(userID,userName,channelID);
         }
         else {
-            var time = result[0].login;
-            var credit = result[0].credit;
+            let time = result[0].login;
+            let credit = result[0].credit;
             let current = moment();
             let user_last_login = moment(time);
             let diff = current.diff(user_last_login, 'days');
@@ -104,7 +104,7 @@ the result of the operation
 @param {int} previousValue - the current credit value before adding new credit
  */
 function time_result(result,channelID,userName,userID,previousValue){
-    if(result == true) {
+    if(result === true) {
         let currentValue = previousValue + 200;
         updateDBLogin(userID,userName,channelID,currentValue);
         bot.sendMessage({
@@ -128,8 +128,8 @@ function time_result(result,channelID,userName,userID,previousValue){
  */
 function updateDBLogin(userID,userName,channelID,value){
     //var sql = "update users set " + columnName + "=" +  "\'" + value + "\'" +" where name =" +"\'" + userID + "\'";
-    var currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-    var sql = "update users set credit" + "=" +  "\'" + value + "\'" + ", login=" + "\'" + currentTime + "\'"
+    let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+    let sql = "update users set credit" + "=" +  "\'" + value + "\'" + ", login=" + "\'" + currentTime + "\'"
         +" where name =" +"\'" + userName + "\'";
     con.query(sql,function(err,result){
        if(err){
@@ -149,10 +149,10 @@ function updateDBLogin(userID,userName,channelID,value){
  * @param channelID - the channel to send message to
  */
 function insertNewDataToDB(userID,userName,channelID){
-    var currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-    var credit = 200;
-    var strike = 0;
-    var sql = "insert into users (name,login,credit,strike) values " + '(' + "\'" + userName + "\'" + "," +
+    let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+    let credit = 200;
+    let strike = 0;
+    let sql = "insert into users (name,login,credit,strike) values " + '(' + "\'" + userName + "\'" + "," +
         "\'" + currentTime + "\'" + "," + "\'" + credit + "\'" + "," + "\'" + strike + "\'" + ')';
     con.query(sql,function(err,result){
         if(err){
@@ -179,7 +179,7 @@ function insertNewDataToDB(userID,userName,channelID){
  * @param channelID - the channel to send the message to
  */
 function removeUserFromDB(userName,userID,channelID){
-    var sql = "delete from users where name =" + "\'" + userName + "\'";
+    let sql = "delete from users where name =" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
