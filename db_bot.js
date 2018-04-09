@@ -13,7 +13,7 @@ var bot = new Discord.Client({
 var con = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "JoeHadit2018",
+    password: "",
     database: "usersdb",
     timezone: 'utc'
 });
