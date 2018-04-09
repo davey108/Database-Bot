@@ -1,0 +1,12 @@
+{
+  "name": "database-bot",
+  "version": "1.0.0",
+  "description": "CS 321 Project",
+  "main": "db_bot.js",
+  "author": "David Sligar",
+  "dependencies": {
+    "discord.io": "github:izy521/discord.io",
+    "moment": "^2.22.0",
+    "mysql": "^2.15.0"
+  }
+}
