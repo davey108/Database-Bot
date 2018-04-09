@@ -35,6 +35,7 @@ Function to mark the bot purpose is to send message while it is on
  * @param {function} evt - event to do something extra, a potential callback
  */
 bot.on('message', function (user, userID, channelID, message, evt) {
+    let serverID = '366786162238554112';
 	if(channelID == 408777732579917824){
 		// Our bot needs to know if it will execute a command
 		// It will listen for messages that will start with `!`
@@ -44,6 +45,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 			args = args.splice(1);
 			switch(cmd) {
 				case 'daily':
+				    console.log(bot.servers[serverID].members[userID.toString()].roles);
 				    getTimeFromDb(user,channelID,userID,time_result);
 				break;
                 case 'ban':
