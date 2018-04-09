@@ -193,7 +193,7 @@ function removeUserFromDB(userName,userID,channelID){
             });
         }
         else{
-            if(!Array.isArray(result) || !result.length){
+            if(result.affectedRows < 1){
                 bot.sendMessage({
                     to: channelID,
                     message: "<@!" + userID + ">" + ' The data you requested for delete does not exist',
