@@ -1,8 +1,8 @@
 var mysql = require('mysql');
 
 var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
+  host: "",
+  user: "",
   password: "",
    database: "usersdb",
     timezone: 'utc'
