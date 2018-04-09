@@ -35,7 +35,7 @@ Function to mark the bot purpose is to send message while it is on
  * @param {function} evt - event to do something extra, a potential callback
  */
 bot.on('message', function (user, userID, channelID, message, evt) {
-	if(channelID === 408777732579917824){
+	if(channelID == 408777732579917824){
 		// Our bot needs to know if it will execute a command
 		// It will listen for messages that will start with `!`
 		if (message.substring(0, 1) == '!') {
