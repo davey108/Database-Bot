@@ -1,4 +1,6 @@
 const Discord = require('discord.io');
+const adminRoleID = '426481518274150420';
+const serverID = '366786162238554112';
 var auth = require('./auth.json');
 var mysql = require('mysql');
 var moment = require('moment');
@@ -11,9 +13,9 @@ var bot = new Discord.Client({
 
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -30,8 +32,8 @@ Function to mark the bot purpose is to send message while it is on
 /**
  * Callback function does the message sending to the server
  * @param {string} user - the system name of the user on discord: THIS NAME IS UNIQUE PER USER
- * @param {string} userID - the nickname of the user on discord for the room: This name is tag-able
- * @param {string} channelID - the channel to send the message to
+ * @param {int} userID - the nickname of the user on discord for the room: This name is tag-able
+ * @param {int} channelID - the channel to send the message to
  * @param {function} evt - event to do something extra, a potential callback
  */
 bot.on('message', function (user, userID, channelID, message, evt) {
@@ -45,15 +47,38 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 			args = args.splice(1);
 			switch(cmd) {
 				case 'daily':
-				    console.log(bot.servers[serverID].members[userID.toString()].roles);
 				    getTimeFromDb(user,channelID,userID,time_result);
 				break;
-                case 'ban':
+                case 'banself':
                     removeUserFromDB(user,userID,channelID);
                 break;
+                // admin priviledged command
                 case 'remove':
-                    // args[0] now is the next argument since we splice it by space
-                    removeUserFromDB(args[0],userID,channelID);
+                    if(checkAdminPriviledge(userID)){
+                        // args[0] now is the next argument since we splice it by space
+                        removeUserFromDB(args[0],userID,channelID);
+                    }
+                    else{
+                        bot.sendMessage({
+                           to: channelID,
+                           message: "<@!" + userID + ">" + ' You do not have admin priviledge to use this command',
+                        });
+                    }
+
+                break;
+                case 'mark':
+                    if(checkAdminPriviledge(userID)){
+                        increaseStrike(print_strike,args[0],userID,channelID);
+                    }
+                    else{
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "<@!" + userID + ">" + ' You do not have admin priviledge to use this command',
+                        });
+                    }
+                break;
+                case 'mystrike':
+                    print_strike(user,userID,channelID);
                 break;
                 case 'credit':
                     getCreditFromDB(printCredits,user,userID,channelID);
@@ -72,8 +97,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 /*
 Gets the last login time of user from the database based on their user name
 @param {string} userName - the name of the user in discord
-@param {string} channelID - the channel name that the message suppose to be send to
-@param {string} userID - the userID to send the message to and update key to the database
+@param {int} channelID - the channel name that the message suppose to be send to
+@param {int} userID - the userID to send the message to and update key to the database
 @param {function} callback - a callback function depending on the result of the checking, most likely time_result()
  */
 function getTimeFromDb(userName,channelID,userID,callback){
@@ -104,9 +129,9 @@ function getTimeFromDb(userName,channelID,userID,callback){
 Accepts a result from a checking operation and does the insert, then print out to the appropriate user
 the result of the operation
 @param {boolean} result - the result of the checking operation
-@param {string} channelID - the name of the channel to send message to
+@param {int} channelID - the name of the channel to send message to
 @param {string} userName - the name of the user in discord
-@param {string} userID - the name of the user to tag in the message send
+@param {int} userID - the name of the user to tag in the message send
 @param {int} previousValue - the current credit value before adding new credit
  */
 function time_result(result,channelID,userName,userID,previousValue){
@@ -127,10 +152,10 @@ function time_result(result,channelID,userName,userID,previousValue){
 }
 /**
  * Update the database with a new credit value and login time
- * @param {string} userID - the user name key to look for to insert the data into that user row
+ * @param {int} userID - the user name key to look for to insert the data into that user row
  * @param {string} userName - the user name in discord
  * @param {object} value - the new credit value to insert
- * @param {string} channelID - the channel name to print out error message
+ * @param {int} channelID - the channel name to print out error message
  */
 function updateDBLogin(userID,userName,channelID,value){
     //var sql = "update users set " + columnName + "=" +  "\'" + value + "\'" +" where name =" +"\'" + userID + "\'";
@@ -150,16 +175,16 @@ function updateDBLogin(userID,userName,channelID,value){
 
 /**
  * Insert the new user data into the database with current time for login time, 200 credits for initial
- * @param userID - the unique userID on discord for error message
- * @param userName - the user name in the forum
- * @param channelID - the channel to send message to
+ * @param userID {int}- the unique userID on discord for error message
+ * @param userName {string} - the user name in the forum
+ * @param channelID {int} - the channel to send message to
  */
 function insertNewDataToDB(userID,userName,channelID){
     let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
     let credit = 200;
     let strike = 0;
-    let sql = "insert into users (name,login,credit,strike) values " + '(' + "\'" + userName + "\'" + "," +
-        "\'" + currentTime + "\'" + "," + "\'" + credit + "\'" + "," + "\'" + strike + "\'" + ')';
+    let sql = "insert into users (name,login,credit,strike,id) values " + '(' + "\'" + userName + "\'" + "," +
+        "\'" + currentTime + "\'" + "," + "\'" + credit + "\'" + "," + "\'" + strike + "\'" + "," + "\'" + userID.toString() + "\'" + ')';
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -180,9 +205,9 @@ function insertNewDataToDB(userID,userName,channelID){
 
 /**
  * Remove a user from the database, i.e use if they are banned
- * @param userName - the user name in the discord forum
- * @param userID - the user id in discord system
- * @param channelID - the channel to send the message to
+ * @param {string} userName - the user name in the discord forum
+ * @param {int} userID - the user id in discord system
+ * @param {int} channelID - the channel to send the message to
  */
 function removeUserFromDB(userName,userID,channelID){
     let sql = "delete from users where name =" + "\'" + userName + "\'";
@@ -204,7 +229,7 @@ function removeUserFromDB(userName,userID,channelID){
             else {
                 bot.sendMessage({
                     to: channelID,
-                    message: "<@!" + userID + ">" + ' Data has been successfully removed!',
+                    message: "<@!" + userID + ">" +  ' ' + userName + ' has been successfully removed!',
                 });
             }
         }
@@ -214,9 +239,9 @@ function removeUserFromDB(userName,userID,channelID){
 /**
  * Get the user credit from the database and display to them the number of credit they have
  * @callback cb - the call back function that is responsible for printing the message to the user
- * @param userName - the user name on the discord forum
- * @param userID - the user id on discord
- * @param channelID - the channel to print the message to
+ * @param {string} userName - the user name on the discord forum
+ * @param {int} userID - the user id on discord
+ * @param {int} channelID - the channel to print the message to
  */
 function getCreditFromDB(cb,userName,userID,channelID){
     let sql = "select * from users where name = " + "\'" + userName + "\'";
@@ -249,5 +274,125 @@ function printCredits(creditValue,userID,channelID){
     bot.sendMessage({
        to: channelID,
        message: "<@!" + userID + ">" + ' Your credit amount is: ' + creditValue,
+    });
+}
+
+/**
+ * Check if the user has an admin priviledge
+ * @param {int} userID - the userID to check priviledge
+ * @return boolean - true if the user has admin priviledge, false otherwise
+ */
+function checkAdminPriviledge(userID){
+    let isAdmin = bot.servers[serverID].members[userID.toString()].roles.includes(adminRoleID);
+    return isAdmin;
+}
+
+/**
+ * Get the strike from the user and increment it by 1, if the user reaches 3 strike, then they are ban
+ * from the server, else, their new data is updated
+ * @param cb callback - a callback to insert new strike to record
+ * @param {string} userName - the user name on discord server
+ * @param {int} userID - the user id on discord
+ * @param {int} channelID - the channel id on discord
+ */
+function increaseStrike(cb,userName,userID,channelID){
+    let sql = "select * from users where name = " + "\'" + userName + "\'";
+    con.query(sql,function(err,result){
+       if(err){
+           console.log(err);
+           return;
+       }
+       else{
+           if(!Array.isArray(result) || !result.length){
+               bot.sendMessage({
+                  to: channelID,
+                  message: "<@!" + userID + ">" + ' Cannot find the user: ' + userName + " in the database",
+               });
+           }
+           else{
+               let strike_amount = result[0].strike;
+               strike_amount += 1;
+               if(strike_amount == 3){
+                   removeUserFromDB(userName,userID,channelID);
+               }
+               else{
+                   updateNewStrikeVal(userName,userID,channelID,strike_amount);
+               }
+           }
+       }
+    });
+}
+
+/**
+ * Get the user's strike from the database
+ * @param {string} userName - the user name to look for in the database
+ * @param {int} userID - the user id in discord
+ * @param {int} channelID - the channel id in discord to send message to
+ */
+function print_strike(userName,userID,channelID){
+    let sql = "select * from users where name =" + "\'" + userName + "\'";
+    con.query(sql,function(err,result){
+       if(err){
+           console.log(err);
+           bot.sendMessage({
+              to: channelID,
+              message: "<@!" + userID + ">" + ' Failed to access database! Check log for error',
+           });
+       }
+       else{
+           if(!Array.isArray(result) || !result.length){
+               bot.sendMessage({
+                  to: channelID,
+                   message: "<@!" + userID + ">" + ' Your data does not exist! Please register with !daily',
+               });
+           }
+           else{
+               let strike = result[0].strike;
+               bot.sendMessage({
+                   to: channelID,
+                   message: "<@!" + userID + ">" + ' Your current strike: ' + strike,
+               });
+           }
+       }
+    });
+}
+
+/**
+ * Insert a new strike value to a desirable user's data
+ * @param {string} userName - the name of the user in discord server
+ * @param {int} userID - the user id int integer
+ * @param {int} channelID - the channel id to send message to
+ * @param {int} newStrikeValue - the new value of strike to insert to db
+ */
+function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
+    let sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where name=" + "\'" + userName + "\'";
+    con.query(sql,function(err,result){
+       if(err){
+           console.log(err);
+           bot.sendMessage({
+              to: channelID,
+              message: "<@!" + userID + ">" + ' Failed to update new strike value in database. Refer to log',
+           });
+       }
+       // successful update
+       else{
+           let sql = "select * from users where name =" + "\'" + userName + "\'";
+           con.query(sql,function(err,result){
+              if(err){
+                  console.log(err);
+                  bot.sendMessage({
+                      to: channelID,
+                      message: "<@!" + userID + ">" + ' Failed to refetch value of user id. Refer to log for details',
+                  });
+              }
+              else{
+                  let id = result[0].id;
+                  bot.sendMessage({
+                      to: channelID,
+                      message: "<@!" + id + ">" + ' You have been warned!',
+                  });
+              }
+           });
+       }
     });
 }
