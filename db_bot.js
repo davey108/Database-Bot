@@ -83,6 +83,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 case 'credit':
                     getCreditFromDB(printCredits,user,userID,channelID);
                 break;
+                case 'help':
+                    bot.sendMessage({
+                       to: channelID,
+                       message: helpTable(),
+                    });
+                break;
 				default:
 					bot.sendMessage({
 						to: channelID,
@@ -395,4 +401,19 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
            });
        }
     });
+}
+
+/**
+ * Return the list of command including their description in a string
+ * @return {string} list of all commands and their description
+ */
+function helpTable(){
+    let commandList = "Type ! in front of all these commands\n" +
+        "daily - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
+        "banself - remove all your records from the database\n" +
+        "remove userName - remove the specified userName from the database (must have admin access)\n" +
+        "mark userName - increase the specified userName strike count by 1 (must have admin access)\n" +
+        "mystrike - see how many strikes you have\n" +
+        "credit - see how many credits you have\n";
+    return commandList;
 }
