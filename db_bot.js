@@ -13,9 +13,9 @@ var bot = new Discord.Client({
 
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -59,22 +59,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         removeUserFromDB(args[0],userID,channelID);
                     }
                     else{
-                        bot.sendMessage({
-                           to: channelID,
-                           message: "<@!" + userID + ">" + ' You do not have admin priviledge to use this command',
-                        });
+                        sendMessage(userID,channelID,"You do not have admin access to this command");
                     }
-
                 break;
                 case 'mark':
                     if(checkAdminPriviledge(userID)){
                         increaseStrike(print_strike,args[0],userID,channelID);
                     }
                     else{
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "<@!" + userID + ">" + ' You do not have admin priviledge to use this command',
-                        });
+                        sendMessage(userID,channelID,"You do not have admin access to this command");
+                    }
+                break;
+                case 'gcredit':
+                    if(checkAdminPriviledge(userID)){
+                        insertCreditAmount(args[1],userID,channelID,args[0]);
+                    }
+                    else{
+                        sendMessage(userID,channelID,"You do not have admin access to this command");
                     }
                 break;
                 case 'mystrike':
@@ -89,11 +90,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                        message: helpTable(),
                     });
                 break;
-				default:
-					bot.sendMessage({
-						to: channelID,
-						message: "<@!" + userID + ">" + ' No commands matching! Type !help for list of commands',
-					});
+                default:
+                    sendMessage(userID,channelID,"No command matching! Type !help for list of commands");
 				// Just add any case commands if you want to..
 			 }
 		 }
@@ -144,16 +142,10 @@ function time_result(result,channelID,userName,userID,previousValue){
     if(result === true) {
         let currentValue = previousValue + 200;
         updateDBLogin(userID,userName,channelID,currentValue);
-        bot.sendMessage({
-            to: channelID,
-            message: "<@!" + userID + ">" + ' You have received 200 daily credits',
-        });
+        sendMessage(userID,channelID,"You have received 200 daily credits");
     }
     else{
-        bot.sendMessage({
-            to: channelID,
-            message: "<@!" + userID + ">" + ' You has logged in within previous 24 hours',
-        })
+        sendMessage(userID,channelID,"You have logged in within previous 24 hours");
     }
 }
 /**
@@ -171,10 +163,7 @@ function updateDBLogin(userID,userName,channelID,value){
     con.query(sql,function(err,result){
        if(err){
            console.log(err);
-           bot.sendMessage({
-               to: channelID,
-               message: "<@!" + userID + ">" + ' Failed to update your data in the database!',
-           });
+           sendMessage(userID,channelID,"Failed to update your data in the database");
        }
     });
 }
@@ -194,16 +183,10 @@ function insertNewDataToDB(userID,userName,channelID){
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
-            bot.sendMessage({
-                to: channelID,
-                message: "<@!" + userID + ">" + ' Failed to create your data in the database!',
-            });
+            sendMessage(userID,channelID,"Failed to create your data in the database");
         }
         else{
-            bot.sendMessage({
-                to: channelID,
-                message: "<@!" + userID + ">" + ' You have received your daily 200 credits!',
-            });
+            sendMessage(userID,channelID,"You have received your 200 daily credits!");
         }
 
     })
@@ -220,17 +203,11 @@ function removeUserFromDB(userName,userID,channelID){
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
-            bot.sendMessage({
-               to: channelID,
-               message: "<@!" + userID + ">" + ' Failed to remove data from database!',
-            });
+            sendMessage(userID,channelID,"Failed to remove data from database. Check log for error");
         }
         else{
             if(result.affectedRows < 1){
-                bot.sendMessage({
-                    to: channelID,
-                    message: "<@!" + userID + ">" + ' The data you requested for delete does not exist',
-                });
+                sendMessage(userID,channelID,"The data you request for delete does not exist");
             }
             else {
                 bot.sendMessage({
@@ -258,10 +235,7 @@ function getCreditFromDB(cb,userName,userID,channelID){
             return;
         }
         if(!Array.isArray(result) || !result.length){
-            bot.sendMessage({
-               to: channelID,
-               message: "<@!" + userID + ">" + ' Your data does not exist! I recommend you to register by typing !daily',
-            });
+            sendMessage(userID,channelID,'Your data does not exist! I recommend you to register by typing !daily')
         }
         else {
             let credit = result[0].credit;
@@ -340,17 +314,11 @@ function print_strike(userName,userID,channelID){
     con.query(sql,function(err,result){
        if(err){
            console.log(err);
-           bot.sendMessage({
-              to: channelID,
-              message: "<@!" + userID + ">" + ' Failed to access database! Check log for error',
-           });
+           sendMessage(userID,channelID,'Failed to access database! Check log for error');
        }
        else{
            if(!Array.isArray(result) || !result.length){
-               bot.sendMessage({
-                  to: channelID,
-                   message: "<@!" + userID + ">" + ' Your data does not exist! Please register with !daily',
-               });
+               sendMessage(userID,channelID,'Your data does not exist! Please register with !daily');
            }
            else{
                let strike = result[0].strike;
@@ -375,10 +343,7 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
     con.query(sql,function(err,result){
        if(err){
            console.log(err);
-           bot.sendMessage({
-              to: channelID,
-              message: "<@!" + userID + ">" + ' Failed to update new strike value in database. Refer to log',
-           });
+           sendMessage(userID,channelID,'Failed to update new strike value in database. Refer to log');
        }
        // successful update
        else{
@@ -386,10 +351,7 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
            con.query(sql,function(err,result){
               if(err){
                   console.log(err);
-                  bot.sendMessage({
-                      to: channelID,
-                      message: "<@!" + userID + ">" + ' Failed to refetch value of user id. Refer to log for details',
-                  });
+                  sendMessage(userID,channelID,'Failed to refetch value of user id. Refer to log for details');
               }
               else{
                   let id = result[0].id;
@@ -416,4 +378,56 @@ function helpTable(){
         "mystrike - see how many strikes you have\n" +
         "credit - see how many credits you have\n";
     return commandList;
+}
+
+/**
+ * Add the desired amount into the specified user's credit
+ * @param {int} amountAdd - the amount to add
+ * @param {int} userID - the user id on discord
+ * @param {int} channelID - the channel to send message to
+ * @param {string} userName - the user name on discord server to add credit to
+ */
+function insertCreditAmount(amountAdd,userID,channelID,userName){
+    let sql = "select * from users where name =" + "\'" + userName + "\'";
+    con.query(sql,function(err,result){
+       if(err){
+           console.log(err);
+           sendMessage(userID,channelID,"Failed to fetch the data from database. Refer to log for error");
+       }
+       else{
+           if(!Array.isArray(result) || !result.length){
+               sendMessage(userID,channelID,"User data does not exist! Tell them to register using !daily");
+           }
+           else{
+               let currentCredit = result[0].credit;
+               let addedUserID = result[0].id;
+               amountAdd = parseInt(amountAdd);
+               let newCredit = currentCredit + amountAdd;
+               let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where name=" + "\'" + userName + "\'";
+               con.query(sql,function(err,result){
+                  if(err){
+                      console.log(err);
+                      sendMessage(userID,channelID,"Failed to update data. Refer to log for error");
+                  }
+                  else{
+                      sendMessage(addedUserID,channelID,"You have received " + amountAdd + " credits");
+
+                  }
+               });
+           }
+       }
+    });
+}
+
+/**
+ * Send the appropriate message to the user
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @param {string} message - the message
+ */
+function sendMessage(userID,channelID,message){
+    bot.sendMessage({
+       to: channelID,
+       message: "<@!" + userID + ">" + " " + message,
+    });
 }
