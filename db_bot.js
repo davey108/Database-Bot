@@ -124,7 +124,8 @@ function getTimeFromDb(userName,channelID,userID,callback){
             let credit = result[0].credit;
             let current = moment();
             let user_last_login = moment(time);
-            let diff = current.diff(user_last_login, 'days');
+            // prevent rounding
+            let diff = current.diff(user_last_login, 'days',true);
             if (diff >= 1) {
                 operation_result = true;
             }
