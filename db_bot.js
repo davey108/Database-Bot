@@ -64,7 +64,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
                 case 'mark':
                     if(checkAdminPriviledge(userID)){
-                        increaseStrike(print_strike,args[0],userID,channelID);
+                        increaseStrike(args[0],userID,channelID);
                     }
                     else{
                         sendMessage(userID,channelID,"You do not have admin access to this command");
@@ -83,6 +83,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
                 case 'credit':
                     getCreditFromDB(printCredits,user,userID,channelID);
+                break;
+                case 't':
+                    sendMessage(userID,channelID,"<:whatthe:433375157185413134>");
                 break;
                 case 'help':
                     bot.sendMessage({
@@ -142,7 +145,7 @@ function time_result(result,channelID,userName,userID,previousValue){
     if(result === true) {
         let currentValue = previousValue + 200;
         updateDBLogin(userID,userName,channelID,currentValue);
-        sendMessage(userID,channelID,"You have received 200 daily credits");
+        sendMessage(userID,channelID,"You have received 200 daily :moneybag:");
     }
     else{
         sendMessage(userID,channelID,"You have logged in within previous 24 hours");
@@ -186,7 +189,7 @@ function insertNewDataToDB(userID,userName,channelID){
             sendMessage(userID,channelID,"Failed to create your data in the database");
         }
         else{
-            sendMessage(userID,channelID,"You have received your 200 daily credits!");
+            sendMessage(userID,channelID,"You have received your 200 daily :moneybag:!");
         }
 
     })
@@ -210,10 +213,7 @@ function removeUserFromDB(userName,userID,channelID){
                 sendMessage(userID,channelID,"The data you request for delete does not exist");
             }
             else {
-                bot.sendMessage({
-                    to: channelID,
-                    message: "<@!" + userID + ">" +  ' ' + userName + ' has been successfully removed!',
-                });
+                sendMessage(userID,channelID,userName + ' has been removed!');
             }
         }
     });
@@ -251,10 +251,7 @@ function getCreditFromDB(cb,userName,userID,channelID){
  * @param channelID - the channel to print message to
  */
 function printCredits(creditValue,userID,channelID){
-    bot.sendMessage({
-       to: channelID,
-       message: "<@!" + userID + ">" + ' Your credit amount is: ' + creditValue,
-    });
+   sendMessage(userID,channelID,"Your :moneybag: is: " + creditValue);
 }
 
 /**
@@ -270,12 +267,11 @@ function checkAdminPriviledge(userID){
 /**
  * Get the strike from the user and increment it by 1, if the user reaches 3 strike, then they are ban
  * from the server, else, their new data is updated
- * @param cb callback - a callback to insert new strike to record
  * @param {string} userName - the user name on discord server
  * @param {int} userID - the user id on discord
  * @param {int} channelID - the channel id on discord
  */
-function increaseStrike(cb,userName,userID,channelID){
+function increaseStrike(userName,userID,channelID){
     let sql = "select * from users where name = " + "\'" + userName + "\'";
     con.query(sql,function(err,result){
        if(err){
@@ -303,6 +299,82 @@ function increaseStrike(cb,userName,userID,channelID){
     });
 }
 
+/**
+ * Increase a user's strike record. ONLY USE BY THE AUTOMATED SYSTEM
+ * @param {int} userID - the user id to increase strike
+ * @param {int} channelID - the channel to print the message to
+ */
+function increaseStrikeBot(userID,channelID){
+    let sql = "select * from users where id = " + "\'" + userID + "\'";
+    con.query(sql,function(err,result){
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(!Array.isArray(result) || !result.length){
+                bot.sendMessage({
+                    to: channelID,
+                    message: "Cannot find the user requested in the database",
+                });
+            }
+            else{
+                let strike_amount = result[0].strike;
+                strike_amount += 1;
+                if(strike_amount == 3){
+                    removeUserFromDBBot(userID,channelID);
+                }
+                else{
+                    updateStrikeBot(userID,channelID,strike_amount);
+                }
+            }
+        }
+    });
+}
+/**
+ * Remove a user from the database, ONLY FOR THE BOT AUTOMATION TO USE!
+ * @param {int} userID - the user id to remove
+ * @param {int} channelID - the channel id to send confirmation message to
+ */
+function removeUserFromDBBot(userID,channelID){
+    let sql = "delete from users where id =" + "\'" + userID + "\'";
+    con.query(sql,function(err,result){
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(result.affectedRows < 1){
+                sendMessage(userID,channelID,"The data for this user does not exist");
+            }
+            else {
+                // not sure if work if the user is banned
+                sendMessage(userID,channelID,"has been banned from server!");
+            }
+        }
+    });
+}
+
+/**
+ * Update a user's strike amount in the database, ONLY FOR THE BOT AUTOMATION TO USE!
+ * @param {int} userID - the user id to increase strike amount
+ * @param {int} channelID - the channel id to send message to
+ */
+function updateStrikeBot(userID,channelID,newStrikeValue){
+    let sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where id=" + "\'" + userID + "\'";
+    con.query(sql,function(err,result){
+        if(err){
+            console.log(err);
+            bot.sendMessage({
+                to: channelID,
+                message: "Failed to access database. Refer to log for error",
+            })
+        }
+        // successful update
+        else{
+            sendMessage(userID,channelID,"You have been warned!");
+        }
+    });
+
+}
 /**
  * Get the user's strike from the database
  * @param {string} userName - the user name to look for in the database
@@ -355,10 +427,7 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
               }
               else{
                   let id = result[0].id;
-                  bot.sendMessage({
-                      to: channelID,
-                      message: "<@!" + id + ">" + ' You have been warned!',
-                  });
+                  sendMessage(id,channelID,"You have been warned!");
               }
            });
        }
@@ -382,7 +451,7 @@ function helpTable(){
 
 /**
  * Add the desired amount into the specified user's credit
- * @param {int} amountAdd - the amount to add
+ * @param {string} amountAdd - the amount to add
  * @param {int} userID - the user id on discord
  * @param {int} channelID - the channel to send message to
  * @param {string} userName - the user name on discord server to add credit to
@@ -410,12 +479,57 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
                       sendMessage(userID,channelID,"Failed to update data. Refer to log for error");
                   }
                   else{
-                      sendMessage(addedUserID,channelID,"You have received " + amountAdd + " credits");
+                      sendMessage(addedUserID,channelID,"You have received " + amountAdd + " :moneybag:");
 
                   }
                });
            }
        }
+    });
+}
+
+/**
+ * Add a number of credit to a user's account. ONLY USE BY AUTOMATED SYSTEM
+ * @param {int} userID - the user id to add credits to
+ * @param {int} channelID - the channel id to send message to
+ * @param {string} amount - the amount to increase the user's credit by
+ */
+function insertCreditBot(userID,channelID,amount){
+    let sql = "select * from users where id =" + "\'" + userID + "\'";
+    con.query(sql,function(err,result){
+        if(err){
+            console.log(err);
+            bot.sendMessage({
+                to: channelID,
+                message: "Failed to fetch data. Refer to log for error!",
+            })
+        }
+        else{
+            if(!Array.isArray(result) || !result.length){
+                bot.sendMessage({
+                   to: channelID,
+                   message: "User data does not exist!",
+                });
+            }
+            else{
+                let currentCredit = result[0].credit;
+                amount = parseInt(amount);
+                let newCredit = currentCredit + amount;
+                let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where id=" + "\'" + userID + "\'";
+                con.query(sql,function(err,result){
+                    if(err){
+                        console.log(err);
+                        bot.sendMessage({
+                           to: channelID,
+                           message: "Failed to update user data. Refer to log for error!",
+                        });
+                    }
+                    else{
+                        sendMessage(userID,channelID,"You have received " + amount + " :moneybag:");
+                    }
+                });
+            }
+        }
     });
 }
 
