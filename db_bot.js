@@ -13,9 +13,9 @@ var bot = new Discord.Client({
 
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -203,7 +203,7 @@ function insertNewDataToDB(userID,userName,channelID){
  */
 function removeUserFromDB(userName,userID,channelID){
     let sql = "delete from users where name =" + "\'" + userName + "\'";
-    con.query(sql,function(err,result){
+        con.query(sql,function(err,result){
         if(err){
             console.log(err);
             sendMessage(userID,channelID,"Failed to remove data from database. Check log for error");
@@ -384,13 +384,13 @@ function updateStrikeBot(userID,channelID,newStrikeValue){
 function print_strike(userName,userID,channelID){
     let sql = "select * from users where name =" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
-       if(err){
-           console.log(err);
-           sendMessage(userID,channelID,'Failed to access database! Check log for error');
-       }
-       else{
-           if(!Array.isArray(result) || !result.length){
-               sendMessage(userID,channelID,'Your data does not exist! Please register with !daily');
+        if(err){
+                   console.log(err);
+                   sendMessage(userID,channelID,'Failed to access database! Check log for error');
+               }
+               else{
+                   if(!Array.isArray(result) || !result.length){
+                       sendMessage(userID,channelID,'Your data does not exist! Please register with !daily');
            }
            else{
                let strike = result[0].strike;
@@ -471,18 +471,33 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
                let currentCredit = result[0].credit;
                let addedUserID = result[0].id;
                amountAdd = parseInt(amountAdd);
-               let newCredit = currentCredit + amountAdd;
-               let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where name=" + "\'" + userName + "\'";
-               con.query(sql,function(err,result){
-                  if(err){
-                      console.log(err);
-                      sendMessage(userID,channelID,"Failed to update data. Refer to log for error");
-                  }
-                  else{
-                      sendMessage(addedUserID,channelID,"You have received " + amountAdd + " :moneybag:");
-
-                  }
-               });
+               // if the amount adding is negative and it is greater than current own credit, then only subtract credit
+               // until reaches 0
+               if(amountAdd < 0 && Math.abs(amountAdd) > currentCredit){
+                   amountAdd = currentCredit * -1;
+               }
+               // if the amount add is 0 after all checking, don't need to access database
+               if(amountAdd == 0){
+                   sendMessage(userID,channelID,"You don't have enough credit");
+               }
+               else {
+                   let newCredit = currentCredit + amountAdd;
+                   let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where name=" + "\'" + userName + "\'";
+                   con.query(sql, function (err, result) {
+                       if (err) {
+                           console.log(err);
+                           sendMessage(userID, channelID, "Failed to update data. Refer to log for error");
+                       }
+                       else {
+                           if (amountAdd < 0) {
+                               sendMessage(addedUserID, channelID, "You have lost " + amountAdd * -1 + " :moneybag:");
+                           }
+                           else {
+                               sendMessage(addedUserID, channelID, "You have received " + amountAdd + " :moneybag:");
+                           }
+                       }
+                   });
+               }
            }
        }
     });
@@ -502,7 +517,7 @@ function insertCreditBot(userID,channelID,amount){
             bot.sendMessage({
                 to: channelID,
                 message: "Failed to fetch data. Refer to log for error!",
-            })
+            });
         }
         else{
             if(!Array.isArray(result) || !result.length){
@@ -514,20 +529,29 @@ function insertCreditBot(userID,channelID,amount){
             else{
                 let currentCredit = result[0].credit;
                 amount = parseInt(amount);
-                let newCredit = currentCredit + amount;
-                let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where id=" + "\'" + userID + "\'";
-                con.query(sql,function(err,result){
-                    if(err){
-                        console.log(err);
-                        bot.sendMessage({
-                           to: channelID,
-                           message: "Failed to update user data. Refer to log for error!",
-                        });
-                    }
-                    else{
-                        sendMessage(userID,channelID,"You have received " + amount + " :moneybag:");
-                    }
-                });
+                // negative credit
+                if(amount < 0 && Math.abs(amount) > currentCredit){
+                    amount = currentCredit * -1;
+                }
+                if(amount == 0){
+                    sendMessage(userID,channelID,"You do not have enough credit");
+                }
+                else {
+                    let newCredit = currentCredit + amount;
+                    let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where id=" + "\'" + userID + "\'";
+                    con.query(sql, function (err, result) {
+                        if (err) {
+                            console.log(err);
+                            bot.sendMessage({
+                                to: channelID,
+                                message: "Failed to update user data. Refer to log for error!",
+                            });
+                        }
+                        else {
+                            sendMessage(userID, channelID, "You have received " + amount + " :moneybag:");
+                        }
+                    });
+                }
             }
         }
     });
