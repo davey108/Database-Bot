@@ -3,12 +3,12 @@
 - This is a bot use for discord chat forum only which has multiple fun features
 ----
 **Features**:
-- Censorship : Censor inappropriate text and give the user appropriate warnings.
-- Kick-after-3 : The user is automatically kicked from the server if 3 warnings have been breached.
-- Daily Credits: Users can log in every 24 hours for daily credits.
-- Credits Features: Users can use their earned credits to play variety of games. Every games consumes credits, however, winning the games will also gives significant credits amount.
-- Games: Play text based games to earn credit and become the best on the server!
-- Database Integration: Users' data are stored in mysql database through mysql library integration with node js. This reduce the chance of losing datas and keep users' data safe even when there are outages.
+- __Censorship__ : Censor inappropriate text and give the user appropriate warnings.
+- __Kick-after-3__ : The user is automatically kicked from the server if 3 warnings have been breached.
+- __Daily Credits__: Users can log in every 24 hours for daily credits.
+- __Credits Features__: Users can use their earned credits to play variety of games. Every games consumes credits, however, winning the games will also gives significant credits amount.
+- __Games__: Play text based games to earn credit and become the best on the server!
+- __Database Integration__: Users' data are stored in mysql database through mysql library integration with node js. This reduce the chance of losing datas and keep users' data safe even when there are outages.
 ----
 ## Required Downloads for this Bot
 - To run the bot, you will need the below tools:
