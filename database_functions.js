@@ -374,7 +374,7 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
                 }
                 // if the amount add is 0 after all checking, don't need to access database
                 if(amountAdd == 0){
-                    bot.sendMessage(userID,channelID,"The user you requested don't have enough credit");
+                    db_bot.sendMessage(userID,channelID,"The user you requested don't have enough credit");
                 }
                 else {
                     let newCredit = currentCredit + amountAdd;
