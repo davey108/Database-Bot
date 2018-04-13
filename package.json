@@ -8,6 +8,7 @@
     "discord.io": "github:woor/discord.io#gateway_v6",
     "moment": "^2.22.0",
     "moment-timezone": "^0.5.14",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
+    "random-js": "^1.0.8"
   }
 }
