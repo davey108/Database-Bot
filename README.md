@@ -1,5 +1,4 @@
 # Discord Censorship and Fun Game Bot
-----
 **Overview**
 - This is a bot use for discord chat forum only which has multiple fun features
 ----
