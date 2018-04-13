@@ -1,6 +1,6 @@
 # Discord Censorship and Fun Game Bot
 ----
-**Overview**:
+**Overview**/**Features**:
 - This is a bot use for discord chat forum only which has multiple fun features
 **Features**:
 - Censorship : Censor inappropriate text and give the user appropriate warnings.
