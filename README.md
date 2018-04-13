@@ -1,7 +1,8 @@
 # Discord Censorship and Fun Game Bot
 ----
-**Overview**/**Features**:
+**Overview**
 - This is a bot use for discord chat forum only which has multiple fun features
+----
 **Features**:
 - Censorship : Censor inappropriate text and give the user appropriate warnings.
 - Kick-after-3 : The user is automatically kicked from the server if 3 warnings have been breached.
