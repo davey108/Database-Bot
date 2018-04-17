@@ -4,9 +4,9 @@ var db_bot = require('./db_bot.js');
 moment().format();
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -124,7 +124,7 @@ function removeUserFromDB(userName,userID,channelID){
                 db_bot.sendMessage(userID,channelID,"The data you request for delete does not exist");
             }
             else {
-                db_bot.sendMessage(userID,channelID,userName + ' has been removed!');
+                db_bot.sendEmbed(userID,channelID,true,0);
             }
         }
     });
@@ -243,8 +243,7 @@ function removeUserFromDBBot(userID,channelID){
                 db_bot.sendMessage(userID,channelID,"The data for this user does not exist");
             }
             else {
-                // not sure if work if the user is banned
-                db_bot.sendMessage(userID,channelID,"has been banned from server!");
+                db_bot.sendEmbed(userID,channelID,true,0);
             }
         }
     });
@@ -264,7 +263,7 @@ function updateStrikeBot(userID,channelID,newStrikeValue){
         }
         // successful update
         else{
-            db_bot.sendMessage(userID,channelID,"You have been warned!");
+            db_bot.sendEmbed(userID,channelID,false,newStrikeValue);
         }
     });
 
@@ -318,7 +317,7 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
                 }
                 else{
                     let id = result[0].id;
-                    db_bot.sendMessage(id,channelID,"You have been warned!");
+                    db_bot.sendEmbed(id,channelID,false,newStrikeValue)
                 }
             });
         }

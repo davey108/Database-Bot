@@ -1,20 +1,20 @@
-var fs = require('fs')
-var es = require('event-stream');
-var array = [];
-var lineNr = 0;
+let fs = require('fs');
+let es = require('event-stream');
+let badWordsList = [];
+let database = require('./database_functions.js');
+let db_bot = require('./db_bot.js');
 
-var s = fs.createReadStream(process.argv[2])
+
+// set up list of bad words
+let s = fs.createReadStream('./bad_words.txt')
     .pipe(es.split())
     .pipe(es.mapSync(function(line){
 
             // pause the readstream
             s.pause();
 
-            lineNr += 1;
-            array.push(line.trim());
+            badWordsList.push(line.trim());
             // process line here and call s.resume() when rdy
-            // function below was for logging memory usage
-            //logMemoryUsage(lineNr);
 
             // resume the readstream, possibly from a callback
             s.resume();
@@ -24,8 +24,26 @@ var s = fs.createReadStream(process.argv[2])
             })
             .on('end', function(){
                 console.log('Read entire file.');
-                array.forEach(function(element){
-                    console.log(element);
-                });
             })
     );
+
+/**
+ * Check whether or not a message contains a word in the list of bad words
+ * and call the appropriate warning action to strike in database
+ * @param message the message to check for censor words
+ * @param userID the user that sent the message
+ * @param channelID the channel that the message sent was in
+ */
+function checkMessage(message,userID,channelID){
+    let messageSplit = message.split(" ");
+    for(i = 0; i < messageSplit.length; i++){
+        if(badWordsList.includes(messageSplit[i])){
+            database.increaseStrikeBot(userID,channelID);
+            break;
+        }
+    }
+}
+
+module.exports = {
+    checkMessage: checkMessage
+};

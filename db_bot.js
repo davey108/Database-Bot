@@ -4,9 +4,11 @@ const serverID = '366786162238554112';
 var auth = require('./auth.json');
 // for exporting, must export before require the other file
 module.exports = {
-    sendMessage: sendMessage
+    sendMessage: sendMessage,
+    sendEmbed: sendEmbed
 };
 var database = require('./database_functions.js');
+var censor = require('./CensorReader');
 // Initialize Discord Bot
 var bot = new Discord.Client({
    token: auth.token,
@@ -78,7 +80,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     database.getCreditFromDB(database.printCredits,user,userID,channelID);
                 break;
                 case 't':
-                    sendMessage(userID,channelID,"<:whatthe:433375157185413134>");
+                    sendMessage(userID,channelID,":no_entry:");
                 break;
                 case 'help':
                     bot.sendMessage({
@@ -91,6 +93,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 				// Just add any case commands if you want to..
 			 }
 		 }
+		 else {
+		    // check so that the bot doesn't listen to itself
+		    if(bot.id != userID) {
+                censor.checkMessage(message,userID,channelID);
+            }
+        }
 	}
 });
 
@@ -105,6 +113,40 @@ function sendMessage(userID,channelID,message){
        to: channelID,
        message: "<@!" + userID + ">" + " " + message,
     });
+}
+
+/**
+ * Send embed message to indicate the user ban or warn
+ * @param userID - the userID to send warn/ban message to
+ * @param channelID - the channel to send message to
+ * @param isBan - true if the message is for ban, false if the message is for warn
+ * @param amount - current strike for the user
+ */
+function sendEmbed(userID,channelID,isBan,amount){
+    if(isBan) {
+        bot.sendMessage({
+            to: channelID,
+            embed: {
+                color: 0xFF0000,
+                fields: [{
+                    name: ":no_entry: User Banned",
+                    value: "Name: " + "<@!" + userID + ">" + "\nID: " + userID,
+                }]
+            }
+        });
+    }
+    else{
+        bot.sendMessage({
+            to: channelID,
+            embed: {
+                color: 0xFFFF00,
+                fields: [{
+                    name: ":no_entry: User Warned",
+                    value: "Name: " + "<@!" + userID + ">" + "\nID: " + userID + "\nStrike: " + amount,
+                }]
+            }
+        });
+    }
 }
 
 
