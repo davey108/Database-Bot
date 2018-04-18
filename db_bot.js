@@ -2,19 +2,20 @@ const Discord = require('discord.io');
 const adminRoleID = '426481518274150420';
 const serverID = '366786162238554112';
 var auth = require('./auth.json');
+// initialize discord bot
+var bot = new Discord.Client({
+    token: auth.token,
+    autorun: true
+});
 // for exporting, must export before require the other file
 module.exports = {
     sendMessage: sendMessage,
-    sendEmbed: sendEmbed
+    sendEmbed: sendEmbed,
+    bot: bot,
+    serverID: serverID
 };
 var database = require('./database_functions.js');
-var censor = require('./CensorReader');
-// Initialize Discord Bot
-var bot = new Discord.Client({
-   token: auth.token,
-   autorun: true
-});
-
+var censor = require('./CensorReader.js');
 
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
@@ -96,7 +97,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 		 else {
 		    // check so that the bot doesn't listen to itself
 		    if(bot.id != userID) {
-                censor.checkMessage(message,userID,channelID);
+                censor.checkMessage(message,userID,channelID,evt.d.id);
             }
         }
 	}
@@ -124,28 +125,31 @@ function sendMessage(userID,channelID,message){
  */
 function sendEmbed(userID,channelID,isBan,amount){
     if(isBan) {
+        censor.kickUser(userID,serverID);
         bot.sendMessage({
             to: channelID,
             embed: {
                 color: 0xFF0000,
                 fields: [{
                     name: ":no_entry: User Banned",
-                    value: "Name: " + "<@!" + userID + ">" + "\nID: " + userID,
+                    value: "Name: " + "<@!" + userID + ">" + "\n\nID: " + userID,
                 }]
             }
         });
     }
     else{
+        sendMessage(userID,channelID,"You have been warned!");
         bot.sendMessage({
             to: channelID,
             embed: {
                 color: 0xFFFF00,
                 fields: [{
                     name: ":no_entry: User Warned",
-                    value: "Name: " + "<@!" + userID + ">" + "\nID: " + userID + "\nStrike: " + amount,
+                    value: "Name: " + "<@!" + userID + ">" + "\n\nID: " + userID + "\n\nStrike: " + amount,
                 }]
             }
         });
+
     }
 }
 

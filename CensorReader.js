@@ -30,20 +30,50 @@ let s = fs.createReadStream('./bad_words.txt')
 /**
  * Check whether or not a message contains a word in the list of bad words
  * and call the appropriate warning action to strike in database
- * @param message the message to check for censor words
- * @param userID the user that sent the message
- * @param channelID the channel that the message sent was in
+ * @param {string} message the message to check for censor words
+ * @param {int} userID the user that sent the message
+ * @param {int} channelID the channel that the message sent was in
+ * @param {int} messageID the message ID to check against
  */
-function checkMessage(message,userID,channelID){
+function checkMessage(message,userID,channelID,messageID){
     let messageSplit = message.split(" ");
     for(i = 0; i < messageSplit.length; i++){
+        // if bad words included, delete the message and send warn
         if(badWordsList.includes(messageSplit[i])){
             database.increaseStrikeBot(userID,channelID);
+            deleteMessage(messageID,channelID);
             break;
         }
     }
 }
 
+/**
+ * Delete a message given a channel id and the message id
+ * @param {int} messageID - the id of the message to delete
+ * @param {int} channelID - the id of the channel to read message
+ */
+function deleteMessage(messageID,channelID){
+    db_bot.bot.deleteMessage({channelID,messageID},function(err){
+        if(err) {
+            console.log("Error deleting message. Check Server IMMEDIATELY!");
+        }
+    });
+}
+
+/**
+ * Kick a user from the server
+ * @param {int} userID the user id to kick
+ * @param {string} serverID the server id to kick the user from
+ */
+function kickUser(userID,serverID){
+    db_bot.bot.kick({serverID,userID},function(err){
+        if(err){
+            console.log("Error trying to kick the user. Check Server IMMEDIATELY!");
+        }
+    })
+}
+
 module.exports = {
-    checkMessage: checkMessage
+    checkMessage: checkMessage,
+    kickUser: kickUser
 };

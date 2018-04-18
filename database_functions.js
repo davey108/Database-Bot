@@ -217,7 +217,7 @@ function increaseStrikeBot(userID,channelID){
             else{
                 let strike_amount = result[0].strike;
                 strike_amount += 1;
-                if(strike_amount == 3){
+                if(strike_amount == 5){
                     removeUserFromDBBot(userID,channelID);
                 }
                 else{
