@@ -17,6 +17,7 @@ module.exports = {
 };
 var database = require('./database_functions.js');
 var censor = require('./CensorReader.js');
+var game = require('./game.js');
 
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
@@ -81,6 +82,36 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 case 'credit':
                     database.getCreditFromDB(database.printCredits,user,userID,channelID);
                 break;
+                case "pt":
+                    var tGame = game.evalInstanceT(userID, channelID);
+                    sendMessage(userID,channelID,"'s TicTacToe Board:\n\n   " + "`"+ game.printBoardT(tGame, userID)+"`");
+                    break;
+                case "pc":
+                    var cGame = game.evalInstanceC(userID, channelID);
+                    sendMessage(userID,channelID,"'s Connect-4 Board:\n\n " + "`"+game.printBoardC(cGame, userID)+"`");
+                    break;
+                case "pb":
+                    var bGame = game.evalInstanceB(userID, channelID);
+                    sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+game.displayArray(bGame)+"`",);
+                    break;
+                case 't':
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
+                    });
+                    break;
+                case "c":
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playConnect4(parseInt(args[0]), userID, channelID),
+                    });
+                    break;
+                case "b":
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
+                    });
+                    break;
                 case 't':
                     sendMessage(userID,channelID,":no_entry:");
                 break;
@@ -171,7 +202,3 @@ function checkAdminPriviledge(userID){
     let isAdmin = bot.servers[serverID].members[userID.toString()].roles.includes(adminRoleID);
     return isAdmin;
 }
-
-
-
-
