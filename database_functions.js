@@ -434,7 +434,12 @@ function insertCreditBot(userID,channelID,amount){
                             db_bot.sendMessage(userID,channelID,"Failed to update user data. Refer to log for error!");
                         }
                         else {
-                            db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
+                            if(amount < 0){
+                                db_bot.sendMessage(userID,channelID,"You have lost: " + amount*-1 + " :moneybag:");
+                            }
+                            else {
+                                db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
+                            }
                         }
                     });
                 }

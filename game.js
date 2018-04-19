@@ -546,7 +546,7 @@ function evalInstanceC(idCheck, channelID){
 }
 
 // initialize members in the game object
-function initBoardC(cGame, userId, channelID){
+function initBoardC(cGame, userID, channelID){
     for(i = 0; i < 6; i++){
         cGame.board[i] = [];
         for(j = 0; j < 7; j++){
