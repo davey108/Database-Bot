@@ -36,109 +36,108 @@ Function to mark the bot purpose is to send message while it is on
  * @param {function} evt - event to do something extra, a potential callback
  */
 bot.on('message', function (user, userID, channelID, message, evt) {
-	if(channelID == 408777732579917824){
-		// Our bot needs to know if it will execute a command
-		// It will listen for messages that will start with `!`
-		if (message.substring(0, 1) == '!') {
-			let args = message.substring(1).split(' ');
-			let cmd = args[0];
-			args = args.splice(1);
-			switch(cmd) {
-				case 'daily':
-				    database.getTimeFromDb(user,channelID,userID,database.time_result);
-				break;
-                case 'banself':
-                    database.removeUserFromDB(user,userID,channelID);
+    // Our bot needs to know if it will execute a command
+    // It will listen for messages that will start with `!`
+    if (message.substring(0, 1) == '!') {
+        let args = message.substring(1).split(' ');
+        let cmd = args[0];
+        args = args.splice(1);
+        switch(cmd) {
+            case 'daily':
+                database.getTimeFromDb(user,channelID,userID,database.time_result);
+            break;
+            case 'banself':
+                database.removeUserFromDB(user,userID,channelID);
+            break;
+            // admin priviledged command
+            case 'remove':
+                if(checkAdminPriviledge(userID)){
+                    // args[0] now is the next argument since we splice it by space
+                    database.removeUserFromDB(args[0],userID,channelID);
+                }
+                else{
+                    sendMessage(userID,channelID,"You do not have admin access to this command");
+                }
+            break;
+            case 'mark':
+                if(checkAdminPriviledge(userID)){
+                    database.increaseStrike(args[0],userID,channelID);
+                }
+                else{
+                    sendMessage(userID,channelID,"You do not have admin access to this command");
+                }
+            break;
+            case 'gcredit':
+                if(checkAdminPriviledge(userID)){
+                    database.insertCreditAmount(args[1],userID,channelID,args[0]);
+                }
+                else{
+                    sendMessage(userID,channelID,"You do not have admin access to this command");
+                }
+            break;
+            case 'mystrike':
+                database.print_strike(user,userID,channelID);
+            break;
+            case 'credit':
+                database.getCreditFromDB(database.printCredits,user,userID,channelID);
+            break;
+            case "pt":
+                var tGame = game.evalInstanceT(userID, channelID);
+                sendMessage(userID,channelID,"'s TicTacToe Board:\n\n   " + "`"+ game.printBoardT(tGame, userID)+"`");
                 break;
-                // admin priviledged command
-                case 'remove':
-                    if(checkAdminPriviledge(userID)){
-                        // args[0] now is the next argument since we splice it by space
-                        database.removeUserFromDB(args[0],userID,channelID);
-                    }
-                    else{
-                        sendMessage(userID,channelID,"You do not have admin access to this command");
-                    }
+            case "pc":
+                var cGame = game.evalInstanceC(userID, channelID);
+                sendMessage(userID,channelID,"'s Connect-4 Board:\n\n " + "`"+game.printBoardC(cGame, userID)+"`");
                 break;
-                case 'mark':
-                    if(checkAdminPriviledge(userID)){
-                        database.increaseStrike(args[0],userID,channelID);
-                    }
-                    else{
-                        sendMessage(userID,channelID,"You do not have admin access to this command");
-                    }
+            case "pb":
+                var bGame = game.evalInstanceB(userID, channelID);
+                sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+game.displayArray(bGame)+"`",);
                 break;
-                case 'gcredit':
-                    if(checkAdminPriviledge(userID)){
-                        database.insertCreditAmount(args[1],userID,channelID,args[0]);
-                    }
-                    else{
-                        sendMessage(userID,channelID,"You do not have admin access to this command");
-                    }
+            case 't':
+                bot.sendMessage({
+                    to: channelID,
+                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
+                });
                 break;
-                case 'mystrike':
-                    database.print_strike(user,userID,channelID);
+            case "c":
+                bot.sendMessage({
+                    to: channelID,
+                    message: game.playConnect4(parseInt(args[0]), userID, channelID),
+                });
                 break;
-                case 'credit':
-                    database.getCreditFromDB(database.printCredits,user,userID,channelID);
+            case "b":
+                bot.sendMessage({
+                    to: channelID,
+                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
+                });
                 break;
-                case "pt":
-                    var tGame = game.evalInstanceT(userID, channelID);
-                    sendMessage(userID,channelID,"'s TicTacToe Board:\n\n   " + "`"+ game.printBoardT(tGame, userID)+"`");
-                    break;
-                case "pc":
-                    var cGame = game.evalInstanceC(userID, channelID);
-                    sendMessage(userID,channelID,"'s Connect-4 Board:\n\n " + "`"+game.printBoardC(cGame, userID)+"`");
-                    break;
-                case "pb":
-                    var bGame = game.evalInstanceB(userID, channelID);
-                    sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+game.displayArray(bGame)+"`",);
-                    break;
-                case 't':
-                    bot.sendMessage({
-                        to: channelID,
-                        message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
-                    });
-                    break;
-                case "c":
-                    bot.sendMessage({
-                        to: channelID,
-                        message: game.playConnect4(parseInt(args[0]), userID, channelID),
-                    });
-                    break;
-                case "b":
-                    bot.sendMessage({
-                        to: channelID,
-                        message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
-                    });
-                    break;
-                case 't':
-                    sendMessage(userID,channelID,":no_entry:");
-                break;
-                case 'help':
-                    bot.sendMessage({
-                       to: channelID,
-                       embed:{
-                           color: 0x40ff00,
-                           fields: [{
-                               name: "<:whatthe:433375157185413134>__***Help Table***__",
-                               value: database.helpTable()
-                           }]
-                       }
-                    });
-                break;
-                default:
-                    sendMessage(userID,channelID,"No command matching! Type !help for list of commands");
-				// Just add any case commands if you want to..
-			 }
-		 }
-		 else {
-		    // check so that the bot doesn't listen to itself
-		    if(bot.id != userID) {
-                censor.checkMessage(message,userID,channelID,evt.d.id);
-            }
+            case 't':
+                sendMessage(userID,channelID,":no_entry:");
+            break;
+            case 'help':
+                bot.sendMessage({
+                   to: channelID,
+                   embed:{
+                       color: 0x40ff00,
+                       fields: [{
+                           name: "<:whatthe:433375157185413134>__***Help Table***__",
+                           value: database.helpTable()
+                       }]
+                   }
+                });
+            break;
+            default:
+                sendMessage(userID,channelID,"No command matching! Type !help for list of commands");
+            // Just add any case commands if you want to..
+         }
+     }
+     else {
+        // check so that the bot doesn't listen to itself
+        if(bot.id != userID) {
+            censor.checkMessage(message,userID,channelID,evt.d.id);
         }
-	}
+    }
+
 });
 
 /**
