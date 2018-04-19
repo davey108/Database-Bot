@@ -39,8 +39,11 @@ function checkMessage(message,userID,channelID,messageID){
     let messageSplit = message.split(" ");
     for(i = 0; i < messageSplit.length; i++){
         // if bad words included, delete the message and send warn
+        // admin doesn't get warn but get message delete still :)
         if(badWordsList.includes(messageSplit[i])){
-            database.increaseStrikeBot(userID,channelID);
+            if(!db_bot.checkAdmin(userID)) {
+                database.increaseStrikeBot(userID, channelID);
+            }
             deleteMessage(messageID,channelID);
             break;
         }
@@ -68,7 +71,8 @@ function deleteMessage(messageID,channelID){
 function kickUser(userID,serverID){
     db_bot.bot.kick({serverID,userID},function(err){
         if(err){
-            console.log("Error trying to kick the user. Check Server IMMEDIATELY!");
+            console.log("Error trying to kick userID: " + db_bot.bot.users[userID].username + "#" + db_bot.bot.users[userID].discriminator
+                + " Check server IMMEDIATELY!");
         }
     })
 }

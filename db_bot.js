@@ -12,7 +12,8 @@ module.exports = {
     sendMessage: sendMessage,
     sendEmbed: sendEmbed,
     bot: bot,
-    serverID: serverID
+    serverID: serverID,
+    checkAdmin: checkAdminPriviledge
 };
 var database = require('./database_functions.js');
 var censor = require('./CensorReader.js');
@@ -86,7 +87,13 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 case 'help':
                     bot.sendMessage({
                        to: channelID,
-                       message: database.helpTable(),
+                       embed:{
+                           color: 0x40ff00,
+                           fields: [{
+                               name: "<:whatthe:433375157185413134>__***Help Table***__",
+                               value: database.helpTable()
+                           }]
+                       }
                     });
                 break;
                 default:
@@ -132,7 +139,8 @@ function sendEmbed(userID,channelID,isBan,amount){
                 color: 0xFF0000,
                 fields: [{
                     name: ":no_entry: User Banned",
-                    value: "Name: " + "<@!" + userID + ">" + "\n\nID: " + userID,
+                    value: "**Name**: " +  bot.users[userID].username + "#" + bot.users[userID].discriminator
+                    + "\n\n**ID**: " + userID,
                 }]
             }
         });
@@ -140,16 +148,16 @@ function sendEmbed(userID,channelID,isBan,amount){
     else{
         sendMessage(userID,channelID,"You have been warned!");
         bot.sendMessage({
-            to: channelID,
+            to: userID,
             embed: {
                 color: 0xFFFF00,
                 fields: [{
-                    name: ":no_entry: User Warned",
-                    value: "Name: " + "<@!" + userID + ">" + "\n\nID: " + userID + "\n\nStrike: " + amount,
+                    name: ":warning: User Warned",
+                    value: "**Name**: " + bot.users[userID].username + "#" + bot.users[userID].discriminator
+                    + "\n\n**ID**: " + userID + "\n\n**Strike**: " + amount,
                 }]
             }
         });
-
     }
 }
 

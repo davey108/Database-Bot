@@ -4,9 +4,9 @@ var db_bot = require('./db_bot.js');
 moment().format();
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -329,13 +329,13 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
  * @return {string} list of all commands and their description
  */
 function helpTable(){
-    let commandList = "Type ! in front of all these commands\n" +
-        "daily - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
-        "banself - remove all your records from the database\n" +
-        "remove userName - remove the specified userName from the database (must have admin access)\n" +
-        "mark userName - increase the specified userName strike count by 1 (must have admin access)\n" +
-        "mystrike - see how many strikes you have\n" +
-        "credit - see how many credits you have\n";
+    let commandList = "__*Type ! in front of all these commands*__\n" +
+        "**daily** - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
+        "**banself** - remove all your records from the database\n" +
+        "**remove userName** - remove the specified **userName** from the database (must have admin access)\n" +
+        "**mark userName** - increase the specified **userName** strike count by 1 (must have admin access)\n" +
+        "**mystrike** - see how many strikes you have\n" +
+        "**credit** - see how many credits you have\n";
     return commandList;
 }
 
