@@ -32,6 +32,7 @@ module.exports ={
     printBoardB: printBoardB,
     printPieces: printPieces,
 };
+let database = require('./database_functions.js');
 // arrays that hold all of the game instances
 var tGames = [];
 var cGames = [];
@@ -144,7 +145,7 @@ function playTicTacToe(row, col, userID, channelID){
     var winnerString = checkIfWinnerT(tGame);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 3);
+            database.insertCreditBot(userID,channelID, 3);
         }
         removeInstance(tGame);
         return "<@!" + userID + ">" + "'s TicTacToe Board:\n\n   " + "`"+printBoardT(tGame, userID)+winnerString+"`";
@@ -165,7 +166,7 @@ function playTicTacToe(row, col, userID, channelID){
     var winnerString = checkIfWinnerT(tGame);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 3);
+            database.insertCreditBot(userID,channelID, 3);
         }
         removeInstance(tGame);
     }
@@ -307,7 +308,7 @@ function initBoardT(tGame, userID, channelID){
             tGame.availableCells[i*boardSide+j] = [i,j];
         }
     }
-    // insertCreditBot(userID,channelID,-1);
+    database.insertCreditBot(userID,channelID,-1);
 }
 
 // display the board as a string
@@ -354,7 +355,7 @@ function playConnect4(col, userID, channelID){
     var winnerString = checkIfWinnerC(cGame, [row, col]);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 6);
+            database.insertCreditBot(userID,channelID, 6);
         }
         removeInstance(cGame);
         return "<@!" + userID + ">" + "'s Connect-4 Board:\n\n " + "`"+printBoardC(cGame, userID)+winnerString+"`";
@@ -382,7 +383,7 @@ function playConnect4(col, userID, channelID){
     var winnerString = checkIfWinnerC(cGame, [row, col]);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 6);
+            database.insertCreditBot(userID,channelID, 6);
         }
         removeInstance(cGame);
     }
@@ -555,7 +556,7 @@ function initBoardC(cGame, userId, channelID){
     for(i = 0; i < 7; i++){
         cGame.availableCols[i] = i;
     }
-    // insertCreditBot(userID,channelID,-2);
+    database.insertCreditBot(userID,channelID,-2);
 }
 
 // display the current board of the game
@@ -604,7 +605,7 @@ function playBlokus(piece, row, col, userID, channelID){
     if(winnerString == "You just won!" || winnerString == "You just lost!"){
         removeInstance(bGame);
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 9);
+            database.insertCreditBot(userID,channelID, 9);
         }
         return "<@!" + userID + ">" + "'s Blokus Board:\n\n   " + "`"+printBoardB(bGame, userID)+winnerString+"`";
     }
@@ -627,7 +628,7 @@ function playBlokus(piece, row, col, userID, channelID){
     bGame.availablePiecesAtCell = [];
     if(winnerString == "You just won!" || winnerString == "You just lost!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 9);
+            database.insertCreditBot(userID,channelID, 9);
         }
         removeInstance(bGame);
     }
@@ -806,7 +807,7 @@ function initBoardB(bGame, userID, channelID){
     bGame.board[9][0] = "x"; // start player move on bottom left
     bGame.board[0][9] = "o"; // start bot move on top right
 
-    // insertCreditBot(userID,channelID,-3);
+    database.insertCreditBot(userID,channelID,-3);
 }
 
 // display the current board of the game
