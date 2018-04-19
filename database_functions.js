@@ -4,9 +4,9 @@ var db_bot = require('./db_bot.js');
 moment().format();
 
 var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "JoeHadit2018",
+    host: "",
+    user: "",
+    password: "",
     database: "usersdb",
     timezone: 'utc'
 });
