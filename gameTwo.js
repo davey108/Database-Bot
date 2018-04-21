@@ -61,7 +61,6 @@ pairs[15] = 12;
  * @return Returns board representation
  */
 function startNew2048(userID,channelID){
-
     loseGame(userID,channelID,-1); //lose game subtracts credits when game is created.
     let userdata = {};
     userdata["type"] = "2048";
@@ -548,17 +547,17 @@ function emoj(n){
  */
 function pSlots(userID,channelID,mid){
     loseGame(userID,channelID,-1);
-    setTimeout(editMessage, 500);
+    setTimeout(bot.editMessage, 500);
     let s = slots();
     let i,m;
     for(i=0;i<10;i++){ //spin
         s = slots();
         m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(s[0]) + "\n";
-        editMessage(channelID,mid,m);
+        bot.editMessage(channelID,mid,m);
     }
     let final = slots();
     m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(final[0]) + "\n";
-    setTimeout(editMessage, 3000); //will wait up to 3 seconds
+    setTimeout(bot.editMessage, 3000); //will wait up to 3 seconds
     bot.editMessage(channelID,mid,m);
 
     if(final[1] == true){

@@ -37,7 +37,7 @@ Function to mark the bot purpose is to send message while it is on
  * @param {int} channelID - the channel to send the message to
  * @param {function} evt - event to do something extra, a potential callback
  */
-bot.on('message', function (user, userID, channelID, message, messageID, evt) {
+bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) == '!') {
@@ -129,7 +129,7 @@ bot.on('message', function (user, userID, channelID, message, messageID, evt) {
                 });
             break;
             case 'slots':
-                let mid = messageID['d']['id'];
+                let mid = evt.d.id;
                 if(userID != bot.id) {
                     bot.sendMessage({
                         to: channelID,
