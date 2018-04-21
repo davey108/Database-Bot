@@ -2,3 +2,5 @@
 \.idea/
 
 auth\.json
+
+sql_file\.js
