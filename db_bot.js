@@ -1,9 +1,9 @@
 const Discord = require('discord.io');
 const adminRoleID = '426481518274150420';
 const serverID = '366786162238554112';
-var auth = require('./auth.json');
+let auth = require('./auth.json');
 // initialize discord bot
-var bot = new Discord.Client({
+let bot = new Discord.Client({
     token: auth.token,
     autorun: true
 });
@@ -15,9 +15,9 @@ module.exports = {
     serverID: serverID,
     checkAdmin: checkAdminPriviledge
 };
-var database = require('./database_functions.js');
-var censor = require('./CensorReader.js');
-var game = require('./game.js');
+let database = require('./database_functions.js');
+let censor = require('./CensorReader.js');
+let game = require('./game.js');
 
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
@@ -81,39 +81,38 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'credit':
                 database.getCreditFromDB(database.printCredits,user,userID,channelID);
             break;
+            // game.js blocks starts here--------------------------------------------
             case "pt":
-                var tGame = game.evalInstanceT(userID, channelID);
+                let tGame = game.evalInstanceT(userID, channelID);
                 sendMessage(userID,channelID,"'s TicTacToe Board:\n\n   " + "`"+ game.printBoardT(tGame, userID)+"`");
-                break;
+            break;
             case "pc":
-                var cGame = game.evalInstanceC(userID, channelID);
+                let cGame = game.evalInstanceC(userID, channelID);
                 sendMessage(userID,channelID,"'s Connect-4 Board:\n\n " + "`"+game.printBoardC(cGame, userID)+"`");
-                break;
+            break;
             case "pb":
-                var bGame = game.evalInstanceB(userID, channelID);
+                let bGame = game.evalInstanceB(userID, channelID);
                 sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+game.displayArray(bGame)+"`",);
-                break;
+            break;
             case 't':
                 bot.sendMessage({
                     to: channelID,
                     message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
                 });
-                break;
+            break;
             case "c":
                 bot.sendMessage({
                     to: channelID,
                     message: game.playConnect4(parseInt(args[0]), userID, channelID),
                 });
-                break;
+            break;
             case "b":
                 bot.sendMessage({
                     to: channelID,
                     message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
                 });
-                break;
-            case 't':
-                sendMessage(userID,channelID,":no_entry:");
             break;
+            // game.js blocks ends here------------------------------------
             case 'help':
                 bot.sendMessage({
                    to: channelID,

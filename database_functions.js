@@ -453,15 +453,12 @@ function insertCreditBot(userID,channelID,amount){
 module.exports = {
     getTimeFromDb: getTimeFromDb,
     time_result: time_result,
-    updateDBLogin: updateDBLogin,
-    insertNewDataToDB: insertNewDataToDB,
     removeUserFromDB: removeUserFromDB,
     getCreditFromDB:  getCreditFromDB,
     printCredits: printCredits,
     increaseStrike: increaseStrike,
     increaseStrikeBot: increaseStrikeBot,
     print_strike: print_strike,
-    updateNewStrikeVal: updateNewStrikeVal,
     helpTable: helpTable,
     insertCreditAmount: insertCreditAmount,
     insertCreditBot: insertCreditBot
