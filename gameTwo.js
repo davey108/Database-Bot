@@ -10,7 +10,7 @@ let bot = require('./db_bot.js');
 
 //Structure containing all needed data structures for game implentations
 //Key = game_type+UserID (string concat)
-var games_data = {};
+let games_data = {};
 
 //Calls functions to update the DB
 /**
@@ -39,7 +39,7 @@ function loseGame(userID,channelID,amount){
 
 //Const for 2048
 //Transpose mapping for 4x4 Matrix
-pairs = {};
+let pairs = {};
 pairs[2] = 5;
 pairs[3] = 9;
 pairs[4] = 13;
