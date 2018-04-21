@@ -434,7 +434,12 @@ function insertCreditBot(userID,channelID,amount){
                             db_bot.sendMessage(userID,channelID,"Failed to update user data. Refer to log for error!");
                         }
                         else {
-                            db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
+                            if(amount < 0){
+                                db_bot.sendMessage(userID,channelID,"You have lost: " + amount*-1 + " :moneybag:");
+                            }
+                            else {
+                                db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
+                            }
                         }
                     });
                 }
@@ -448,15 +453,12 @@ function insertCreditBot(userID,channelID,amount){
 module.exports = {
     getTimeFromDb: getTimeFromDb,
     time_result: time_result,
-    updateDBLogin: updateDBLogin,
-    insertNewDataToDB: insertNewDataToDB,
     removeUserFromDB: removeUserFromDB,
     getCreditFromDB:  getCreditFromDB,
     printCredits: printCredits,
     increaseStrike: increaseStrike,
     increaseStrikeBot: increaseStrikeBot,
     print_strike: print_strike,
-    updateNewStrikeVal: updateNewStrikeVal,
     helpTable: helpTable,
     insertCreditAmount: insertCreditAmount,
     insertCreditBot: insertCreditBot
