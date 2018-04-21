@@ -19,8 +19,8 @@ Gets the last login time of user from the database based on their user name
 @param {function} callback - a callback function depending on the result of the checking, most likely time_result()
  */
 function getTimeFromDb(userName,channelID,userID,callback){
-    let sql = "select * from users where name = " + "\'" + userName + "\'";
-    let operation_result = false;
+    sql = "select * from users where name = " + "\'" + userName + "\'";
+    operation_result = false;
     con.query(sql, function(err, result){
         if(err) {
             console.log(err);
@@ -30,12 +30,12 @@ function getTimeFromDb(userName,channelID,userID,callback){
             insertNewDataToDB(userID,userName,channelID);
         }
         else {
-            let time = result[0].login;
-            let credit = result[0].credit;
-            let current = moment();
-            let user_last_login = moment(time);
+            time = result[0].login;
+            credit = result[0].credit;
+            current = moment();
+            user_last_login = moment(time);
             // prevent rounding
-            let diff = current.diff(user_last_login, 'days',true);
+            diff = current.diff(user_last_login, 'days',true);
             if (diff >= 1) {
                 operation_result = true;
             }
@@ -54,7 +54,7 @@ the result of the operation
  */
 function time_result(result,channelID,userName,userID,previousValue){
     if(result === true) {
-        let currentValue = previousValue + 200;
+        currentValue = previousValue + 200;
         updateDBLogin(userID,userName,channelID,currentValue);
         db_bot.sendMessage(userID,channelID,"You have received daily: 200 :moneybag:");
     }
@@ -71,8 +71,8 @@ function time_result(result,channelID,userName,userID,previousValue){
  */
 function updateDBLogin(userID,userName,channelID,value){
     //var sql = "update users set " + columnName + "=" +  "\'" + value + "\'" +" where name =" +"\'" + userID + "\'";
-    let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-    let sql = "update users set credit" + "=" +  "\'" + value + "\'" + ", login=" + "\'" + currentTime + "\'"
+    currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+    sql = "update users set credit" + "=" +  "\'" + value + "\'" + ", login=" + "\'" + currentTime + "\'"
         +" where name =" +"\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
@@ -89,10 +89,10 @@ function updateDBLogin(userID,userName,channelID,value){
  * @param channelID {int} - the channel to send message to
  */
 function insertNewDataToDB(userID,userName,channelID){
-    let currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
-    let credit = 200;
-    let strike = 0;
-    let sql = "insert into users (name,login,credit,strike,id) values " + '(' + "\'" + userName + "\'" + "," +
+    currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+    credit = 200;
+    strike = 0;
+    sql = "insert into users (name,login,credit,strike,id) values " + '(' + "\'" + userName + "\'" + "," +
         "\'" + currentTime + "\'" + "," + "\'" + credit + "\'" + "," + "\'" + strike + "\'" + "," + "\'" + userID.toString() + "\'" + ')';
     con.query(sql,function(err,result){
         if(err){
@@ -113,7 +113,7 @@ function insertNewDataToDB(userID,userName,channelID){
  * @param {int} channelID - the channel to send the message to
  */
 function removeUserFromDB(userName,userID,channelID){
-    let sql = "delete from users where name =" + "\'" + userName + "\'";
+    sql = "delete from users where name =" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -138,8 +138,8 @@ function removeUserFromDB(userName,userID,channelID){
  * @param {int} channelID - the channel to print the message to
  */
 function getCreditFromDB(cb,userName,userID,channelID){
-    let sql = "select * from users where name = " + "\'" + userName + "\'";
-    let operation_result = false;
+    sql = "select * from users where name = " + "\'" + userName + "\'";
+    operation_result = false;
     con.query(sql, function(err, result){
         if(err) {
             console.log(err);
@@ -149,7 +149,7 @@ function getCreditFromDB(cb,userName,userID,channelID){
             db_bot.sendMessage(userID,channelID,'Your data does not exist! I recommend you to register by typing !daily')
         }
         else {
-            let credit = result[0].credit;
+            credit = result[0].credit;
             return cb(credit, userID, channelID);
         }
     });
@@ -175,7 +175,7 @@ function printCredits(creditValue,userID,channelID){
  * @param {int} channelID - the channel id on discord
  */
 function increaseStrike(userName,userID,channelID){
-    let sql = "select * from users where name = " + "\'" + userName + "\'";
+    sql = "select * from users where name = " + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -186,7 +186,7 @@ function increaseStrike(userName,userID,channelID){
                 db_bot.sendMessage(userID,channelID,"Cannot find the user: " + userName + " in the database");
             }
             else{
-                let strike_amount = result[0].strike;
+                strike_amount = result[0].strike;
                 strike_amount += 1;
                 if(strike_amount == 5){
                     removeUserFromDB(userName,userID,channelID);
@@ -205,7 +205,7 @@ function increaseStrike(userName,userID,channelID){
  * @param {int} channelID - the channel to print the message to
  */
 function increaseStrikeBot(userID,channelID){
-    let sql = "select * from users where id = " + "\'" + userID + "\'";
+    sql = "select * from users where id = " + "\'" + userID + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -215,7 +215,7 @@ function increaseStrikeBot(userID,channelID){
                 db_bot.sendMessage(userID,channelID,"Cannot find the requested user from database");
             }
             else{
-                let strike_amount = result[0].strike;
+                strike_amount = result[0].strike;
                 strike_amount += 1;
                 if(strike_amount == 5){
                     removeUserFromDBBot(userID,channelID);
@@ -233,7 +233,7 @@ function increaseStrikeBot(userID,channelID){
  * @param {int} channelID - the channel id to send confirmation message to
  */
 function removeUserFromDBBot(userID,channelID){
-    let sql = "delete from users where id =" + "\'" + userID + "\'";
+    sql = "delete from users where id =" + "\'" + userID + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -255,7 +255,7 @@ function removeUserFromDBBot(userID,channelID){
  * @param {int} channelID - the channel id to send message to
  */
 function updateStrikeBot(userID,channelID,newStrikeValue){
-    let sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where id=" + "\'" + userID + "\'";
+    sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where id=" + "\'" + userID + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -275,7 +275,7 @@ function updateStrikeBot(userID,channelID,newStrikeValue){
  * @param {int} channelID - the channel id in discord to send message to
  */
 function print_strike(userName,userID,channelID){
-    let sql = "select * from users where name =" + "\'" + userName + "\'";
+    sql = "select * from users where name =" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -286,7 +286,7 @@ function print_strike(userName,userID,channelID){
                 db_bot.sendMessage(userID,channelID,'Your data does not exist! Please register with !daily');
             }
             else{
-                let strike = result[0].strike;
+                strike = result[0].strike;
                 db_bot.sendMessage(userID,channelID,"You current strike: " + strike);
             }
         }
@@ -301,7 +301,7 @@ function print_strike(userName,userID,channelID){
  * @param {int} newStrikeValue - the new value of strike to insert to db
  */
 function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
-    let sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where name=" + "\'" + userName + "\'";
+    sql = "update users set strike =" + "\'" + newStrikeValue + "\'" + "where name=" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -309,14 +309,14 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
         }
         // successful update
         else{
-            let sql = "select * from users where name =" + "\'" + userName + "\'";
+            sql = "select * from users where name =" + "\'" + userName + "\'";
             con.query(sql,function(err,result){
                 if(err){
                     console.log(err);
                     db_bot.sendMessage(userID,channelID,'Failed to refetch value of user id. Refer to log for details');
                 }
                 else{
-                    let id = result[0].id;
+                    id = result[0].id;
                     db_bot.sendEmbed(id,channelID,false,newStrikeValue)
                 }
             });
@@ -329,7 +329,7 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
  * @return {string} list of all commands and their description
  */
 function helpTable(){
-    let commandList = "__*Type ! in front of all these commands*__\n" +
+    commandList = "__*Type ! in front of all these commands*__\n" +
         "**daily** - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
         "**banself** - remove all your records from the database\n" +
         "**remove userName** - remove the specified **userName** from the database (must have admin access)\n" +
@@ -347,7 +347,7 @@ function helpTable(){
  * @param {string} userName - the user name on discord server to add credit to
  */
 function insertCreditAmount(amountAdd,userID,channelID,userName){
-    let sql = "select * from users where name =" + "\'" + userName + "\'";
+    sql = "select * from users where name =" + "\'" + userName + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -358,8 +358,8 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
                 db_bot.sendMessage(userID,channelID,"User data does not exist! Tell them to register using !daily");
             }
             else{
-                let currentCredit = result[0].credit;
-                let addedUserID = result[0].id;
+                currentCredit = result[0].credit;
+                addedUserID = result[0].id;
                 // if the adding amount contains a digit, don't convert
                 if(amountAdd.match(/[a-z]/i)){
                     db_bot.sendMessage(userID,channelID,"You did not enter a valid number amount");
@@ -376,8 +376,8 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
                     db_bot.sendMessage(userID,channelID,"The user you requested don't have enough credit");
                 }
                 else {
-                    let newCredit = currentCredit + amountAdd;
-                    let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where name=" + "\'" + userName + "\'";
+                    newCredit = currentCredit + amountAdd;
+                    sql = "update users set credit=" + "\'" + newCredit + "\'" + "where name=" + "\'" + userName + "\'";
                     con.query(sql, function (err, result) {
                         if (err) {
                             console.log(err);
@@ -405,7 +405,7 @@ function insertCreditAmount(amountAdd,userID,channelID,userName){
  * @param {string} amount - the amount to increase the user's credit by
  */
 function insertCreditBot(userID,channelID,amount){
-    let sql = "select * from users where id =" + "\'" + userID + "\'";
+    sql = "select * from users where id =" + "\'" + userID + "\'";
     con.query(sql,function(err,result){
         if(err){
             console.log(err);
@@ -416,7 +416,7 @@ function insertCreditBot(userID,channelID,amount){
                 db_bot.sendMessage(userID,channelID,"User data does not exist. Register by typing !daily");
             }
             else{
-                let currentCredit = result[0].credit;
+                currentCredit = result[0].credit;
                 amount = parseInt(amount);
                 // negative credit
                 if(amount < 0 && Math.abs(amount) > currentCredit){
@@ -426,20 +426,15 @@ function insertCreditBot(userID,channelID,amount){
                     db_bot.sendMessage(userID,channelID,"You do not have enough credit");
                 }
                 else {
-                    let newCredit = currentCredit + amount;
-                    let sql = "update users set credit=" + "\'" + newCredit + "\'" + "where id=" + "\'" + userID + "\'";
+                    newCredit = currentCredit + amount;
+                    sql = "update users set credit=" + "\'" + newCredit + "\'" + "where id=" + "\'" + userID + "\'";
                     con.query(sql, function (err, result) {
                         if (err) {
                             console.log(err);
                             db_bot.sendMessage(userID,channelID,"Failed to update user data. Refer to log for error!");
                         }
                         else {
-                            if(amount < 0){
-                                db_bot.sendMessage(userID,channelID,"You have lost: " + amount*-1 + " :moneybag:");
-                            }
-                            else {
-                                db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
-                            }
+                            db_bot.sendMessage(userID, channelID, "You have received: " + amount + " :moneybag:");
                         }
                     });
                 }
@@ -453,12 +448,15 @@ function insertCreditBot(userID,channelID,amount){
 module.exports = {
     getTimeFromDb: getTimeFromDb,
     time_result: time_result,
+    updateDBLogin: updateDBLogin,
+    insertNewDataToDB: insertNewDataToDB,
     removeUserFromDB: removeUserFromDB,
     getCreditFromDB:  getCreditFromDB,
     printCredits: printCredits,
     increaseStrike: increaseStrike,
     increaseStrikeBot: increaseStrikeBot,
     print_strike: print_strike,
+    updateNewStrikeVal: updateNewStrikeVal,
     helpTable: helpTable,
     insertCreditAmount: insertCreditAmount,
     insertCreditBot: insertCreditBot

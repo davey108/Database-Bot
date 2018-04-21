@@ -1,0 +1,7 @@
+list
+used
+for
+testing
+hangman
+game
+bot

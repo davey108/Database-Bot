@@ -10,7 +10,6 @@
     "moment": "^2.22.0",
     "moment-timezone": "^0.5.14",
     "mysql": "^2.15.0",
-    "random-js": "^1.0.8",
-    "random-words": "^1.1.0"
+    "random-js": "^1.0.8"
   }
 }
