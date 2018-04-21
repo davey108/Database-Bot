@@ -11,13 +11,15 @@ let bot = new Discord.Client({
 module.exports = {
     sendMessage: sendMessage,
     sendEmbed: sendEmbed,
-    bot: bot,
+    bot: bot, // will we need to pass bot object directly???
     serverID: serverID,
-    checkAdmin: checkAdminPriviledge
+    checkAdmin: checkAdminPriviledge,
+    editMessage: editMessage
 };
 let database = require('./database_functions.js');
 let censor = require('./CensorReader.js');
 let game = require('./game.js');
+let gameTwo = require('./gameTwo.js');
 
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
@@ -35,7 +37,7 @@ Function to mark the bot purpose is to send message while it is on
  * @param {int} channelID - the channel to send the message to
  * @param {function} evt - event to do something extra, a potential callback
  */
-bot.on('message', function (user, userID, channelID, message, evt) {
+bot.on('message', function (user, userID, channelID, message, messageID, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) == '!') {
@@ -113,6 +115,31 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             // game.js blocks ends here------------------------------------
+            // gameTwo.js blocks starts here -------------------------------------------------
+            case 'hangman':
+                bot.sendMessage({
+                    to: channelID,
+                    message: gameTwo.hangman(userID,args,channelID),
+                });
+            break;
+            case '2048':
+                bot.sendMessage({
+                    to: channelID,
+                    message: gameTwo.p2048(userID,args,channelID),
+                });
+            break;
+            case 'slots':
+                let mid = messageID['d']['id'];
+                if(userID != bot.id) {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "!slots " + userID,
+                    });
+                }
+                else
+                    gameTwo.pSlots(args[0],channelID,mid);
+            break;
+            // gameTwo.js blocks end here------------------------------------------------------
             case 'help':
                 bot.sendMessage({
                    to: channelID,
@@ -199,4 +226,20 @@ function sendEmbed(userID,channelID,isBan,amount){
 function checkAdminPriviledge(userID){
     let isAdmin = bot.servers[serverID].members[userID.toString()].roles.includes(adminRoleID);
     return isAdmin;
+}
+
+
+//Updates the UI given the channelID, messageID, and content
+/**
+ * Function to edit an existing message (Used for slots game)
+ * @param {int} channelID - channelID id to send message to
+ * @param {int} messageID - messageID, id of message to update
+ * @param {String} message - new message to set
+ */
+function editMessage(channelID, messageID, message){
+    bot.editMessage({
+        channelID: channelID,
+        messageID: messageID,
+        message: message,
+    });
 }

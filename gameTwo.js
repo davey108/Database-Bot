@@ -4,16 +4,42 @@ module.exports = {
     hangman : hangman,
     pSlots : pSlots
 }
-let database = require('./database_functions.js');
 
-//--------------------------------------------------------------------------------
+let database = require('./database_functions.js');
+let bot = require('./db_bot.js');
+
 //Structure containing all needed data structures for game implentations
 //Key = game_type+UserID (string concat)
 var games_data = {};
 
+//Calls functions to update the DB
+/**
+ * Updates the database when a game is won
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @param {int} amount - amount of credits to add
+ */
+function winGame(userID,channelID,amount){
+    database.insertCreditBot(userID,channelID,amount);
+    return "You win!";
+}
+
+//Calls functions to update the DB
+/**
+ * Updates the database when a game is won
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @param {int} amount - amount of credits to add
+ */
+function loseGame(userID,channelID,amount){
+    database.insertCreditBot(userID,channelID,amount);
+    return;
+}
+
+
 //Const for 2048
 //Transpose mapping for 4x4 Matrix
-let pairs = {};
+pairs = {};
 pairs[2] = 5;
 pairs[3] = 9;
 pairs[4] = 13;
@@ -28,51 +54,58 @@ pairs[10] = 7;
 pairs[14] = 8;
 pairs[15] = 12;
 
-//Calls functions to update the DB
-function winGame(userID,channelID,amount){
-    database.insertCreditBot(userID,channelID,amount);
-    return "You win!\n";
-}
+/**
+ * Creates the data structure for a new 2048 game
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @return Returns board representation
+ */
+function startNew2048(userID,channelID){
 
-//Calls functions to update the DB
-function loseGame(userID,channelID,amount){
-    database.insertCreditBot(userID,channelID,amount);
-    return;
-}
-
-//Creates new 2048 Board
-function startNew2048(userID){
-    loseGame(userID,channelID,-5);
+    loseGame(userID,channelID,-1); //lose game subtracts credits when game is created.
     let userdata = {};
     userdata["type"] = "2048";
     let board = {};
     board[Math.floor(Math.random()*(16-1+1))+1] = 2; //set starting tile
     userdata['board'] = board;
     games_data["2048"+userID] = userdata;
-    return printBoard(board)
+    return printBoard(board);
 }
 
 //Iterates the game: attempts next move if existing game, otherwise makes new game
-function p2048(userID, args){
+/**
+ * Advances a 2048 game
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @param {String} args - 'up' 'down' 'left' or 'right'
+ * @return Returns board representation or error message if invalid move
+ */
+function p2048(userID, args,channelID){
     let r = "";
     if(games_data["2048"+userID] == undefined){
-        r = startNew2048(userID);
+        r = startNew2048(userID,channelID);
     }else{
-        r = update2048(userID, args);
+        r = update2048(userID, args,channelID);
     }
-    return "2048 game for " + "<@!" + userID + ">\n"  + "\n" + r
+    return "2048 game for " + "<@!" + userID + ">\n"  + "\n" + r;
 }
 
 //Updates board based on direction choosen by user
 //Valid args for dir: 'up' 'down' 'left' or 'right'
 //Invalid arguments returns message and unaltered board
 //Returns a string (updates game_data)
-function update2048(userID, dir){
-    let i;
+/**
+ * Returns updated 2048 game structure
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - the channel id to send message to
+ * @param {String} dir - 'up' 'down' 'left' or 'right'
+ * @return Returns the new game data (map) for the 2048 game
+ */
+function update2048(userID, dir, channelID){
+
     let userdata = games_data["2048"+userID];
     let board = userdata['board'];
 
-    //console.log(dir)
     let valid = false;
     if((dir == 'up' | dir == 'down' | dir == 'right' | dir == 'left')){
         valid = true;
@@ -83,23 +116,23 @@ function update2048(userID, dir){
     }
 
     let newBoard = collapse(dir, board);
-    for(i=0;i<3;i++) {
+    for(i=0;i<3;i++)
         newBoard = collapse(dir, newBoard);
-    }
+
     //Get game status, true -> win, false -> loss, map -> valid game
     let check = checkBoard(newBoard);
 
     //Check if win condition
     if(check == true){
-        winGame(userID);
+        winGame(userID,channelID,20);
         games_data["2048"+userID] = undefined; //remove board data
+        return "You won 2048.\n";
     }
 
     //check if loss condition
     if(check == false){
-        //return "YOU LOST"
-        loseGame(userID);
         games_data["2048"+userID] = undefined;
+        return "You lost 2048.\n";
     }
 
     if(true || board != newBoard){
@@ -114,11 +147,17 @@ function update2048(userID, dir){
         userdata['board'] = newBoard;
         games_data["2048"+userID] = userdata;
     }
+
     return printBoard(newBoard);
 
 }
 
 //Used for formmating of board
+/**
+ * Returns number of spaces needed for board formatting
+ * @param {int} k - largest number of board
+ * @return ceil(log(k))
+ */
 function intLength(k){
     if(k<10)
         return 1;
@@ -131,6 +170,11 @@ function intLength(k){
 }
 
 //Returns string representation of board
+/**
+ * String representation of 2048 board
+ * @param {map} board - 2048 board
+ * @return {String} Returns board representation
+ */
 function printBoard(board){
     let i;
     let max = 0;
@@ -144,7 +188,7 @@ function printBoard(board){
     r = "";
     for(i=1;i<=16;i++){
         if(board[i] == undefined){
-            r += "x"+" ".repeat(m)
+            r += "x"+" ".repeat(m);
         }else{
             r += board[i];
             r += " ".repeat(m-intLength(board[i])) + " ";
@@ -159,11 +203,16 @@ function printBoard(board){
 
 //Transpose of 4x4 matrix (map)
 //Returns a new map
+/**
+ * Transpose of 4x4 in map representation
+ * @param {map} - map of board representation
+ * @return Returns new map of transpose of board matrix
+ */
 function transpose(board){
     //A -> A'
     //[[1 2 3 4] [5 6 7 8] [9 10 11 12] [13 14 15 16]] -> [[1 5 9 13] [2 6 10 14] [3 7 11 15] [4 8 12 16]]
-    let i,j;
     let newBoard = {};
+    let i,j;
     for(i=1;i<=16;i++){
         j = getTrans(i);
 
@@ -175,17 +224,23 @@ function transpose(board){
         newBoard[i] = board[j];
         newBoard[j] = board[i];
     }
-    return newBoard;
+    return newBoard	;
 }
 
 //Shift board right, left, up, or down
 //Returns board
+/**
+ * Helper method for shifting 2048 board
+ * @param {String} dir - direction
+ * @param {map} board - map representation of 2048 board
+ * @return Returns new board map
+ */
 function collapse(dir, board){
 
     //dir : up, down, left, right
     //down(A) = right(A')
     //up(A)   = left(A')
-    let i,j;
+    let i;
     if(dir == 'down'){
         //down(A) = right(A')'
         return transpose(collapse('right',transpose(board)));
@@ -249,6 +304,11 @@ function collapse(dir, board){
 //Return true if any space contains 2048 (win condition)
 //Return false if no space contains 2048 and the board is full
 //Otherwise, return list of empty spaces
+/**
+ * Helper method for 2048
+ * @param {map} board - map representation of 2048 board
+ * @return Returns new board or boolean
+ */
 function checkBoard(board){
     let empty = [];
     let i;
@@ -289,19 +349,26 @@ function getTrans(i){
     if(r == undefined){
         return i;
     }
-    return r;
+    return r
 }
 
 //Creates new data for game in game_data
-function startNewHangman(userID){
-    loseGame(userID,channelID,-5);
+/**
+ * Creates new datastructure (map) for hangman game
+ * @param {int} userID - the user id to send message to
+ * @return Returns hangman map
+ */
+function startNewHangman(userID,channelID){
+    loseGame(userID,channelID,-1); //subtract credits when game is created
+
+    let word = randomWords();
     let userdata = {};
     userdata["type"] = "hangman"; //game type
     userdata["strikes"] = 0;
-    userdata["word"] = randomWords();
+    userdata["word"] = word;
     userdata["letters_used"] = [];
     userdata["guesses"] = 0;
-    userdata["board"] = "#".repeat(userdata["word"].length);
+    userdata["board"] = "#".repeat(word.length);
     userdata["status"] = "valid";
 
     games_data[userID] = userdata;
@@ -311,10 +378,17 @@ function startNewHangman(userID){
 }
 
 //iterates a hangman game, returns string of representation of board or error
-function checkLetter(userID, letter){
-
-    letter = letter.toString().toLowerCase().trim(); //fix bad inputs
+/**
+ * Helper function for hangman
+ * @param {int} userID - the user id to send message to
+ * @param {int} channelID - channel id to send message to
+ * @param {String} letter - letter
+ @return Returns string of game or error message
+ */
+function checkLetter(userID, letter, channelID){
     let i;
+    letter = letter.toString().toLowerCase().trim(); //fix bad inputs
+
     if(letter.length != 1){
         return  "You did not entery a valid guess. Please guess a single letter.\n" +
             "Current board : " + games_data[userID]['board'] + "\t(" + games_data[userID]['strikes'] + " strikes used)\n";
@@ -346,8 +420,6 @@ function checkLetter(userID, letter){
 
     //Game Over
     if(userdata['strikes'] > 5){
-        loseGame(userID);
-        //updateCredits(userID, 1) //update the users credits
         games_data[userID] = undefined; //remove game
         return "You have used up all of your guesses.\nThe correct word was '" + userdata['word'] + "'.\n";
     }
@@ -357,16 +429,17 @@ function checkLetter(userID, letter){
         return "The letter " + letter + " is not in the current word.\nA guess has been used.\n" +
             "Letters used so far: " + userdata["letters_used"] +
             "\nCurrent board : " + userdata['board'] + "\t(" + userdata['strikes'] + " strikes used)\n";
-    }else{
+    }
+    else{
         //Correct guess
         let w = userdata['word'];
         let newBoard = "";
         for(i=0;i<w.length;i++){
             if(w[i] == letter){
-                newBoard += letter
-                //userdata['board'] = replaceStringIndex(userdata['board'],i,i,letter)
-            }else{
-                newBoard += userdata['board'][i]
+                newBoard += letter;
+            }
+            else{
+                newBoard += userdata['board'][i];
             }
         }
         userdata['board'] = newBoard;
@@ -374,9 +447,8 @@ function checkLetter(userID, letter){
 
         //Game won
         if(newBoard.valueOf() == w.valueOf()){
-            winGame(userID);
+            winGame(userID,channelID,5);
             returnMessage = "You have correctly guessed the word using only " + userdata['guesses'] + " guesses.\n";
-            //updateCredits(userID,1) //update credits
             userdata = undefined; //use userdata to null
             games_data[userID] = undefined;
         }
@@ -388,19 +460,31 @@ function checkLetter(userID, letter){
 
 //High level function called to progress game
 //Will progress game if one exist, otherwise will create new one
-function hangman(userID,letter,user){
+/**
+ * High level hangman function for main switch statement
+ * @param {int} userID - the user id to send message to
+ * @param {String} letter - user's guess
+ * @param {String} user - username that corresponds to userID
+ * @param {int} channelID - channel ID to send message to
+ @return Returns string of current hangman instance
+ */
+function hangman(userID,letter,user,channelID){
+    let r;
     if(games_data[userID] == undefined){
-        r = startNewHangman(userID);
-    }else{
-        r = checkLetter(userID,letter);
+        r = startNewHangman(userID,channelID);
+    }
+    else{
+        r = checkLetter(userID,letter,channelID);
     }
     return "Hangman game for " + "<@!" + userID + ">\n"  + "\n" + r;
 }
 
 //Creates random 3x3 matrix with vals 1-6
 //Returns array of 3x3 map and boolean for if instance is a win
+/**
+ * Helper function for slot game
+ */
 function slots(){
-    let i;
     let min = 1;
     let max = 6;
     let board = {};
@@ -409,7 +493,7 @@ function slots(){
         board[i] = r;
     }
 
-    win = false;
+    let win = false;
     if(board[0] == board[1] && board[1] == board[2]){
         win = true;
     }if(board[3] == board[4] && board[4] == board[5]){
@@ -421,19 +505,26 @@ function slots(){
 }
 
 //Returns string representation of slot board
+/**
+ * Helper function for slot game
+ * @return Returns string represntation of slot instance
+ */
 function printSlot(vals){
     let r = "";
-
+    let k;
     for(k=0;k<9;k++){
         if(k%3 == 0){
             r+="\n\n";
-        }
-        r+=emoj(vals[k])+' ';
+        }r+=emoj(vals[k])+' ';
     }
     return r;
 }
 
 //Translates number into emoji
+/**
+ * Helper function for slot game
+ * @return emoji representation of int
+ */
 function emoj(n){
     switch(n){
         case 1: return ":cherries:";
@@ -445,35 +536,33 @@ function emoj(n){
     }
 }
 
-//Updates the UI given the channelID, messageID, and content
-// FIX FOR EDIT MESSAGE!!!!!!!!!!!!!!
-function editMessage(c, mid, mess){
-    bot.editMessage({channelID: c, messageID: mid, message: mess});
-}
 
-
-//Bot calls itself with args of UserID
+//Bot calls iteself with args of UserID
 //Returns print message to UI and repetedly edits it
 //Returns void
-function pSlots(userID,channelID,mid) {
-    loseGame(userID, channelID, -5);
+/**
+ * High level slot game function called by the main switch statement
+ * @param {int} userID - the user id to send message to
+ * @param {int} channel - the channel id to send message to
+ * @param {int} mid - message id to edit when 'spinning' the slot
+ */
+function pSlots(userID,channelID,mid){
+    loseGame(userID,channelID,-1);
     setTimeout(editMessage, 500);
-    let s = slots()
-    for (i = 0; i < 10; i++) { //spin
+    let s = slots();
+    let i,m;
+    for(i=0;i<10;i++){ //spin
         s = slots();
-        let m = "Slots for " + "<@!" + userID + ">\n" + printSlot(s[0]) + "\n";
-        editMessage(channelID, mid, m);
+        m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(s[0]) + "\n";
+        editMessage(channelID,mid,m);
     }
-
     let final = slots();
-    let m = "Slots for " + "<@!" + userID + ">\n" + printSlot(final[0]) + "\n";
+    m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(final[0]) + "\n";
     setTimeout(editMessage, 3000); //will wait up to 3 seconds
-    editMessage(channelID, mid, m);
+    bot.editMessage(channelID,mid,m);
 
-    if (final[1] == true) {
-        winGame(userID);
-    }
-    else {
-        loseGame(userID);
+    if(final[1] == true){
+        winGame(userID,channelID,10);
     }
 }
+
