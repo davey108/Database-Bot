@@ -173,8 +173,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             default:
+                censor.censorCheck(message.substring(1),userID,channelID,evt.d.id);
                 sendMessage(userID,channelID,"No command matching! Type !help for list of commands");
-            // Just add any case commands if you want to..
          }
      }
      else {
