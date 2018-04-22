@@ -96,24 +96,24 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             break;
             case "pb":
                 let bGame = game.evalInstanceB(userID, channelID);
-                sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+game.displayArray(bGame)+"`",);
+                sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+"`");
             break;
             case 't':
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
+                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID),
                 });
             break;
             case "c":
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playConnect4(parseInt(args[0]), userID, channelID),
+                    message: game.playConnect4(parseInt(args[0]), userID),
                 });
             break;
             case "b":
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
+                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID),
                 });
             break;
             // game.js blocks ends here------------------------------------
@@ -121,16 +121,17 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'hangman':
                 bot.sendMessage({
                     to: channelID,
-                    message: gameTwo.hangman(userID,args,channelID),
+                    message: game.hangman(userID,args,channelID),
                 });
             break;
             case '2048':
                 bot.sendMessage({
                     to: channelID,
-                    message: gameTwo.p2048(userID,args,channelID),
+                    message: game.p2048(userID,args,channelID),
                 });
             break;
             case 'slots':
+                setTimeout(game.pSlots,3000);
                 let mid = evt.d.id;
                 if(userID != bot.id) {
                     bot.sendMessage({
@@ -139,7 +140,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 }
                 else
-                    gameTwo.pSlots(args[0],channelID,mid);
+                    game.pSlots(args[0],channelID,mid);
             break;
             // gameTwo.js blocks end here------------------------------------------------------
             // censorship.js begins here---------------------------------------------------
