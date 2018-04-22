@@ -20,7 +20,7 @@ var database = require('./database_functions.js');
 var censor = require('./CensorReader.js');
 var games = require('./game.js');
 
-botID = undefined
+var botID = undefined
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
 	botID = bot.id //used for slots, set botID on startup
@@ -108,7 +108,7 @@ bot.on('message', function (user, userID, channelID, message, messageID, evt) {
 					//When user calls, the bot will echo !slots with args = userID
 					//When the bot calls, will 'spin' the slots by editing the bot's message multiple times
 					setTimeout(games.pSlots,3000);
-					mid = messageID['d']['id'] //message ID used in editing
+					let mid = messageID['d']['id'] //message ID used in editing
 					if(userID != botID)
 						bot.sendMessage({to: channelID, message: "!slots " + userID,})
 					else
@@ -130,21 +130,21 @@ bot.on('message', function (user, userID, channelID, message, messageID, evt) {
                 break;
 		// Phong's code begin
 		case "pt":
-			tGame = games.evalInstanceT(userID, channelID);
+			let tGame = games.evalInstanceT(userID, channelID);
 			bot.sendMessage({
 				to: channelID,
 				message: "<@!" + userID + ">" + "'s TicTacToe Board:\n\n   " + "`"+games.printBoardT(tGame, userID)+"`",
 			});
 			break;
 		case "pc":
-			cGame = games.evalInstanceC(userID, channelID);
+			let cGame = games.evalInstanceC(userID, channelID);
 			bot.sendMessage({
 				to: channelID,
 				message: "<@!" + userID + ">" + "'s Connect-4 Board:\n\n " + "`"+games.printBoardC(cGame, userID)+"`",
 			});
 			break;
 		case "pb":
-			bGame = games.evalInstanceB(userID, channelID);
+			let bGame = games.evalInstanceB(userID, channelID);
 			bot.sendMessage({
 				to: channelID,
 				message: "<@!" + userID + ">" + "'s Blokus Board:\n\n   " + "`"+games.printBoardB(bGame, userID)+"`",

@@ -1,12 +1,12 @@
-fs = require('fs');
-es = require('event-stream');
-badWordsList = [];
-database = require('./database_functions.js');
-db_bot = require('./db_bot.js');
+let fs = require('fs');
+let es = require('event-stream');
+let badWordsList = [];
+let database = require('./database_functions.js');
+let db_bot = require('./db_bot.js');
 
 
 // set up list of bad words
-s = fs.createReadStream('./bad_words.txt')
+let s = fs.createReadStream('./bad_words.txt')
     .pipe(es.split())
     .pipe(es.mapSync(function(line){
 
@@ -36,7 +36,7 @@ s = fs.createReadStream('./bad_words.txt')
  * @param {int} messageID the message ID to check against
  */
 function checkMessage(message,userID,channelID,messageID){
-    messageSplit = message.split(" ");
+    let messageSplit = message.split(" ");
     for(i = 0; i < messageSplit.length; i++){
         // if bad words included, delete the message and send warn
         // admin doesn't get warn but get message delete still :)
