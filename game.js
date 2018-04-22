@@ -389,7 +389,7 @@ function startNewHangman(userID,channelID){
  */
 function checkLetter(userID, letter, channelID){
 	
-	let letter = letter.toString().toLowerCase().trim(); //fix bad inputs
+	letter = letter.toString().toLowerCase().trim(); //fix bad inputs
 		
 	if(letter.length != 1){
 		return  "You did not entery a valid guess. Please guess a single letter.\n" +
