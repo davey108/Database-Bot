@@ -14,12 +14,14 @@ module.exports = {
     bot: bot, // will we need to pass bot object directly???
     serverID: serverID,
     checkAdmin: checkAdminPriviledge,
-    editMessage: editMessage
+    editMessage: editMessage,
+    sendNotice: sendNoticeWordEmbed,
+    deleteMessage: deleteMessage,
+    sendWarnEmbed: sendWarnEmbed
 };
 let database = require('./database_functions.js');
-let censor = require('./CensorReader.js');
+let censor = require('./CensorShip.js');
 let game = require('./game.js');
-let gameTwo = require('./gameTwo.js');
 
 bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
@@ -147,6 +149,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                        color: 0x40ff00,
                        fields: [{
                            name: "<:whatthe:433375157185413134>__***Help Table***__",
+                           // would make more sense if help table is inside bot...
                            value: database.helpTable()
                        }]
                    }
@@ -160,7 +163,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
      else {
         // check so that the bot doesn't listen to itself
         if(bot.id != userID) {
-            censor.checkMessage(message,userID,channelID,evt.d.id);
+            censor.censorCheck(message,userID,channelID,evt.d.id);
         }
     }
 
@@ -188,7 +191,7 @@ function sendMessage(userID,channelID,message){
  */
 function sendEmbed(userID,channelID,isBan,amount){
     if(isBan) {
-        censor.kickUser(userID,serverID);
+        kickUser(userID,serverID);
         bot.sendMessage({
             to: channelID,
             embed: {
@@ -241,5 +244,122 @@ function editMessage(channelID, messageID, message){
         channelID: channelID,
         messageID: messageID,
         message: message,
+    });
+}
+
+
+/**
+ * Send a notice to the channel of a ban word has been added to the list
+ * @param {int}channelID - the channel id to send message to
+ * @param {string} word - the word that was added to the list
+ * @param {boolean} isIn - indicate if this word is already in ban list or not
+ * @param {boolean} forBan - indicate if this send embed is for banning or unbanning word
+ */
+function sendNoticeWordEmbed(channelID,word,isIn,forBan) {
+    if(forBan) {
+        if (!isIn) {
+            bot.sendMessage({
+                to: channelID,
+                embed: {
+                    color: 0xe74C3C,
+                    fields: [{
+                        name: ":x: WORD BANNED :x:",
+                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" has been banned\n"
+                    }]
+                }
+            });
+        }
+        else {
+            bot.sendMessage({
+                to: channelID,
+                embed: {
+                    color: 0xe74C3C,
+                    fields: [{
+                        name: ":x: WORD ALREADY BANNED :x:",
+                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" has already been banned\n"
+                    }]
+                }
+            });
+        }
+    }
+    else{
+        if(!isIn) {
+            bot.sendMessage({
+                to: channelID,
+                embed: {
+                    color: 0x2ECC71,
+                    fields: [{
+                        name: ":white_check_mark: WORD ALREADY ALLOWED :white_check_mark:",
+                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" was not banned!\n"
+                    }]
+                }
+            });
+        }
+        else{
+            bot.sendMessage({
+                to: channelID,
+                embed: {
+                    color: 0x2ECC71,
+                    fields: [{
+                        name: ":white_check_mark: WORD UNBANNED :white_check_mark:",
+                        value: "the phrase \"**" + word.substring(1, word.length-1) + "**\" has been unbanned!\n"
+                    }]
+                }
+            });
+        }
+    }
+}
+
+/**
+ * Delete a message from a channel
+ * @param channelID - the channel id to delete message from
+ * @param messageID - the id of the message to be deleted
+ */
+function deleteMessage(channelID,messageID){
+    bot.deleteMessage({
+        channelID: channelID,
+        messageID: messageID,
+    }, function(err){
+        if(err) {
+            console.log("Cannot delete message with messageID: " + messageID+ " with channelID: " + channelID +
+            ". Check DISCORD IMMEDIATELY!");
+        }
+    });
+}
+
+/**
+ * Send an embed warning to the user
+ * @param {string} userID - the user id to send embed to
+ * @param {int} color - the color in hex of the embed
+ * @param {string} name - the name of the field
+ * @param {string} text - the text of the field
+ */
+function sendWarnEmbed(userID,color,name,text){
+    bot.sendMessage({
+        to: userID,
+        embed: {
+            color: color,
+            fields: [{
+                name: name,
+                value: text,
+            }]
+        }
+    });
+}
+
+/**
+ * Kick a user from the server
+ * @param {int} userID the user id to kick
+ * @param {string} serverID the server id to kick the user from
+ */
+function kickUser(userID,serverID){
+    bot.kick({
+        serverID: serverID,
+        userID: userID,
+    },function(err){
+        if(err){
+            console.log("Error trying to kick userID: " + bot.users[userID].username + "#" + bot.users[userID].discriminator
+                + " Check server IMMEDIATELY!");
+        }
     });
 }
