@@ -177,7 +177,7 @@ function writeToFile(path){
     let logstream = fs.createWriteStream(path,{'flags': 'w'});
     let i;
     for(i = 0; i < badWordsList.length; i++){
-        logstream.write(badWordsList[i] + '\n');
+        logstream.write(badWordsList[i].trim() + '\n');
     }
     console.log("Wrote entire file");
 }
