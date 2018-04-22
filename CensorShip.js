@@ -1,7 +1,9 @@
 let fs = require('fs');
 let es = require('event-stream');
 module.exports = {
-    censorCheck: censorBot
+    censorCheck: censorBot,
+    banWord: banWord,
+    unBanWord: unBanWord
 }
 let bot = require('./db_bot.js');
 let path = "./bad_words.txt";
@@ -17,6 +19,8 @@ let s = fs.createReadStream('./bad_words.txt')
             s.pause();
 
             badWordsList.push(line.trim());
+            if(line == '\n')
+                console.log("ok");
             // process line here and call s.resume() when rdy
 
             // resume the readstream, possibly from a callback
@@ -29,6 +33,7 @@ let s = fs.createReadStream('./bad_words.txt')
                 console.log('Read entire file.');
             })
     );
+
 /**
  * Use when one of the ban/unban word command is issued. Format the
  * string to the way that badwordslist is stored (lower case)
@@ -36,8 +41,8 @@ let s = fs.createReadStream('./bad_words.txt')
  * @return {string} the formatted string
  */
 function formatMessage(args){
-    var i = 2;
-    var word = args[1];
+    var i = 1;
+    var word = args[0];
     while(i < args.length){
         word += " " + args[i].toLowerCase().replace(/[.,\/#!$+<>%\^&\*;:{}=\-_`~()]/g,"");
         i++;
@@ -99,7 +104,7 @@ function unBanWord(channelID, args){
  * @return {number} the index of a word in the censor list, -1 otherwise
  */
 function needsCensor(message){
-    let msg = " " + message.toLowerCase().replace(/[.,\/#!$+<>%\^&\*;:{}=\-_`~()?]/g,"") + " ";
+    let msg = message.toLowerCase().replace(/[.,\/#!$+<>%\^&\*;:{}=\-_`~()?]/g,"");
     let msgSplit = msg.split(" ");
     let i;
     for(i = 0; i < msgSplit.length; i++){
@@ -172,6 +177,7 @@ function writeToFile(path){
     let logstream = fs.createWriteStream(path,{'flags': 'w'});
     let i;
     for(i = 0; i < badWordsList.length; i++){
-        logstream.write(badWordsList[i] + '\r\n');
+        logstream.write(badWordsList[i] + '\n');
     }
+    console.log("Wrote entire file");
 }

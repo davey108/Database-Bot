@@ -142,6 +142,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     gameTwo.pSlots(args[0],channelID,mid);
             break;
             // gameTwo.js blocks end here------------------------------------------------------
+            // censorship.js begins here---------------------------------------------------
+            case 'ban':
+                if(checkAdminPriviledge(userID)){
+                    censor.banWord(channelID,args);
+                }
+                else{
+                    sendMessage(userID,channelID,"You do not have admin access to this command");
+                }
+            break;
+            case 'unban':
+                if(checkAdminPriviledge(userID)){
+                    censor.unBanWord(channelID,args);
+                }
+                else{
+                    sendMessage(userID,channelID,"You do not have admin access to this command");
+                }
+            break;
             case 'help':
                 bot.sendMessage({
                    to: channelID,
@@ -264,7 +281,7 @@ function sendNoticeWordEmbed(channelID,word,isIn,forBan) {
                     color: 0xe74C3C,
                     fields: [{
                         name: ":x: WORD BANNED :x:",
-                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" has been banned\n"
+                        value: "the phrase \"**" + word+ "**\" has been banned\n"
                     }]
                 }
             });
@@ -276,7 +293,7 @@ function sendNoticeWordEmbed(channelID,word,isIn,forBan) {
                     color: 0xe74C3C,
                     fields: [{
                         name: ":x: WORD ALREADY BANNED :x:",
-                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" has already been banned\n"
+                        value: "the phrase \"**" + word+ "**\" has already been banned\n"
                     }]
                 }
             });
@@ -290,7 +307,7 @@ function sendNoticeWordEmbed(channelID,word,isIn,forBan) {
                     color: 0x2ECC71,
                     fields: [{
                         name: ":white_check_mark: WORD ALREADY ALLOWED :white_check_mark:",
-                        value: "the phrase \"**" + word.substring(1, word.length - 1) + "**\" was not banned!\n"
+                        value: "the phrase \"**" + word + "**\" was not banned!\n"
                     }]
                 }
             });
@@ -302,7 +319,7 @@ function sendNoticeWordEmbed(channelID,word,isIn,forBan) {
                     color: 0x2ECC71,
                     fields: [{
                         name: ":white_check_mark: WORD UNBANNED :white_check_mark:",
-                        value: "the phrase \"**" + word.substring(1, word.length-1) + "**\" has been unbanned!\n"
+                        value: "the phrase \"**" + word + "**\" has been unbanned!\n"
                     }]
                 }
             });
