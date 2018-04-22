@@ -2,3 +2,9 @@
 \.idea/
 
 auth\.json
+
+sql_file\.js
+
+bad_words\.txt
+
+database_functions\.js
