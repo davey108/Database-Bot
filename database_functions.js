@@ -5,8 +5,8 @@ moment().format();
 
 var con = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "JoeHadit2018",
+    user: "",
+    password: "",
     database: "usersdb",
     timezone: 'utc'
 });
