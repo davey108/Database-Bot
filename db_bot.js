@@ -14,10 +14,11 @@ module.exports = {
     bot: bot, // will we need to pass bot object directly???
     serverID: serverID,
     checkAdmin: checkAdminPriviledge,
-    editMessage: editMessage,
     sendNotice: sendNoticeWordEmbed,
     deleteMessage: deleteMessage,
-    sendWarnEmbed: sendWarnEmbed
+    sendWarnEmbed: sendWarnEmbed,
+    promiseSend: promiseSend,
+    promiseEdit: promiseEdit
 };
 let database = require('./database_functions.js');
 let censor = require('./CensorShip.js');
@@ -101,19 +102,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 't':
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID),
+                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID,channelID),
                 });
             break;
             case "c":
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playConnect4(parseInt(args[0]), userID),
+                    message: game.playConnect4(parseInt(args[0]), userID, channelID),
                 });
             break;
             case "b":
                 bot.sendMessage({
                     to: channelID,
-                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID),
+                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID,channelID),
                 });
             break;
             // game.js blocks ends here------------------------------------
@@ -131,16 +132,13 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             case 'slots':
-                setTimeout(game.pSlots,3000);
-                let mid = evt.d.id;
-                if(userID != bot.id) {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "!slots " + userID,
-                    });
+                let amount = 1;
+                let bet = args[0];
+                if(bet != null){
+                    amount = parseInt(bet);
                 }
-                else
-                    game.pSlots(args[0],channelID,mid);
+                game.pSlots(userID, channelID, amount);
+
             break;
             // gameTwo.js blocks end here------------------------------------------------------
             // censorship.js begins here---------------------------------------------------
@@ -168,7 +166,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                        fields: [{
                            name: "<:whatthe:433375157185413134>__***Help Table***__",
                            // would make more sense if help table is inside bot...
-                           value: database.helpTable()
+                           value: helpTable()
                        }]
                    }
                 });
@@ -249,21 +247,6 @@ function checkAdminPriviledge(userID){
     return isAdmin;
 }
 
-
-//Updates the UI given the channelID, messageID, and content
-/**
- * Function to edit an existing message (Used for slots game)
- * @param {int} channelID - channelID id to send message to
- * @param {int} messageID - messageID, id of message to update
- * @param {String} message - new message to set
- */
-function editMessage(channelID, messageID, message){
-    bot.editMessage({
-        channelID: channelID,
-        messageID: messageID,
-        message: message,
-    });
-}
 
 
 /**
@@ -380,4 +363,58 @@ function kickUser(userID,serverID){
                 + " Check server IMMEDIATELY!");
         }
     });
+}
+
+
+/**
+ * Return the list of command including their description in a string
+ * @return {string} list of all commands and their description
+ */
+function helpTable(){
+    let commandList = "__*Type ! in front of all these commands*__\n" +
+        "**daily** - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
+        "**remove userName** - remove the specified **userName** from the database (must have admin access)\n" +
+        "**mark userName** - increase the specified **userName** strike count by 1 (must have admin access)\n" +
+        "**mystrike** - see how many strikes you have\n" +
+        "**credit** - see how many credits you have\n" +
+        "**t** <row> <col> - mark x at row/column on tic-tac-toe board\n" +
+        "**c** <col> - drop x on column on the connect 4 board\n" +
+        "**b** <block> <row> <col> - place a block's pin on row/column\n" +
+        "**pt** - print the tic-tac-toe board\n" +
+        "**pc** - print the connect 4 board\n" +
+        "**pb** - print the blockus board\n" +
+        "**hangman** <letter> - play hangman with the letter to guess\n" +
+        "**2048** <direction> - play 2048 with a direction within this list: {up,down,left,right}\n" +
+        "**slots** <amount> - play slots with an amount to bet\n";
+    return commandList;
+}
+
+/**
+ * A promise for sending a message to the channel
+ * @param channelID
+ * @param message
+ * @return {Promise<any>}
+ */
+function promiseSend(channelID,message){
+    return new Promise((resolve,reject) => {
+        bot.sendMessage({
+            to: channelID,
+            message: message,
+        }, (err,result) => {
+            resolve(result);
+        });
+    });
+}
+
+
+function promiseEdit(channelID,messageID,message){
+    return new Promise((resolve,reject) => {
+        bot.editMessage({
+            channelID: channelID,
+            messageID: messageID,
+            message: message,
+        }, (err,result) =>{
+            resolve(result);
+        });
+    })
 }

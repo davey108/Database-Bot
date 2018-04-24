@@ -1,4 +1,20 @@
 let randomWords = require('random-words');
+module.exports = {
+    hangman : hangman,
+    pSlots : pSlots,
+    p2048 : p2048,
+
+    // Phong's code begin
+    playTicTacToe: playTicTacToe,
+    evalInstanceT: evalInstanceT,
+    printBoardT: printBoardT,
+    playConnect4: playConnect4,
+    evalInstanceC: evalInstanceC,
+    printBoardC: printBoardC,
+    playBlokus: playBlokus,
+    evalInstanceB: evalInstanceB,
+    printBoardB: printBoardB,
+};
 let database = require('./database_functions.js');
 let db_bot = require('./db_bot.js');
 
@@ -22,7 +38,6 @@ let bBoardSide = 10;
  */
 function winGame(userID,channelID,amount){
     database.insertCreditBot(userID,channelID,amount);
-    console.log(userID+"\tWIN GAME CALLED");
 }
 
 //Calls functions to update the DB
@@ -34,7 +49,6 @@ function winGame(userID,channelID,amount){
  */
 function loseGame(userID,channelID,amount){
     database.insertCreditBot(userID,channelID,amount);
-    console.log(userID+"\tLOSE GAME CALLED");
 }
 
 
@@ -63,7 +77,6 @@ pairs[15] = 12;
  * @return Returns board representation
  */
 function startNew2048(userID,channelID){
-
     loseGame(userID,channelID,-1); //lose game subtracts credits when game is created.
     let userdata = {};
     userdata["type"] = "2048";
@@ -486,7 +499,6 @@ function slots(){
         let r = Math.floor(Math.random()*(max-min+1))+min;
         board[i] = r;
     }
-
     let win = false;
     if(board[0] == board[1] && board[1] == board[2]){
         win = true;
@@ -494,7 +506,8 @@ function slots(){
         win = true;
     }if(board[6] == board[7] && board[7] == board[8]){
         win = true;
-    }return [board, win];
+    }
+    return [board, win];
 }
 
 //Returns string representation of slot board
@@ -507,8 +520,10 @@ function printSlot(vals){
     for(let k=0;k<9;k++){
         if(k%3 == 0){
             r+="\n\n";
-        }r+=emoj(vals[k])+' ';
-    }return r;
+        }
+        r+=emoj(vals[k])+' ';
+    }
+    return r;
 }
 
 //Translates number into emoji
@@ -536,13 +551,16 @@ function emoj(n){
  */
 function editMessage(c, mid, mess){
     //wrapper for edit function in discord.io api
-    db_bot.bot.editMessage({channelID: c, messageID: mid, message: mess})
+    db_bot.bot.editMessage({channelID: c, messageID: mid, message: mess},function(err,response){
+
+    });
 }
 
-function checkSlotWin(final,userID,channelID){
-    if(final[1] == true){
-        winGame(userID,channelID,10);
-    }
+function checkSlotWin(final,userID,channelID,amount){
+    /*if(final[1] == true){
+        winGame(userID,channelID,amount*3);
+    }*/
+    winGame(userID,channelID,amount*3);
 }
 
 //Bot calls iteself with args of UserID
@@ -552,24 +570,50 @@ function checkSlotWin(final,userID,channelID){
  * High level slot game function called by the main switch statement
  * @param {int} userID - the user id to send message to
  * @param {int} channel - the channel id to send message to
- * @param {int} mid - message id to edit when 'spinning' the slot
+ * @param {int} amount - the amount to bet
  */
-function pSlots(userID,channelID,mid){
-
-    loseGame(userID,channelID,-1);
+async function pSlots(userID,channelID,amount) {
+    loseGame(userID, channelID, amount * -1);
     let s = slots();
-    let m = ""
-    for(let i=0;i<10;i++){ //spin
-        let s = slots();
-        m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(s[0]) + "\n";
-        editMessage(channelID,mid,m);
+    let m = "Slots for " + "<@!" + userID + ">\n" + printSlot(s[0]) + "\n";
+    let messageID = await db_bot.promiseSend(channelID, m);
+    let i;
+    for (i = 0; i < 2; i++) {
+        //setTimeout(rollSlots, 1000, userID, channelID, messageID.id);
+        await delay(userID,channelID,messageID.id);
     }
-
     let final = slots();
-    m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(final[0]) + "\n";
+    m = "Slots for " + "<@!" + userID + ">\n" + printSlot(final[0]) + "\n";
+    await db_bot.promiseEdit(channelID, messageID.id, m);
+    checkSlotWin(final, userID, channelID, amount);
+}
 
-    editMessage(channelID,mid,m)
-    checkSlotWin(final,userID,channelID);
+/*
+ * Deprecated -> Replace with delay below
+ */
+async function rollSlots(userID,channelID,messageID){
+    let s = slots();
+    let m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(s[0]) + "\n";
+    await db_bot.promiseEdit(channelID,messageID,m);
+    return;
+}
+
+/**
+ * Delay the slot roll to control the time of the slot
+ * @param {int} userID - the user id that the msg belongs to
+ * @param {int} channelID - the channel id to send msg to
+ * @param {int} messageID - the message id to edit
+ * @return {Promise<any>} - the return promise of the edit msg result
+ */
+async function delay(userID,channelID,messageID){
+    return new Promise((resolve,reject) => {
+        let s = slots();
+        let m = "Slots for " + "<@!" + userID + ">\n"  +  printSlot(s[0]) + "\n";
+        setTimeout(() => {
+            db_bot.promiseEdit(channelID,messageID,m);
+            return resolve(messageID);
+        },1000);
+    });
 }
 
 // Phong's code begin
@@ -680,7 +724,7 @@ function playTicTacToe(row, col, userID, channelID){
     let winnerString = checkIfWinnerT(tGame);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 3);
+            database.insertCreditBot(userID,channelID, 3);
         }
         removeInstance(tGame);
         return "<@!" + userID + ">" + "'s TicTacToe Board:\n\n   " + "`"+printBoardT(tGame, userID)+winnerString+"`";
@@ -702,7 +746,7 @@ function playTicTacToe(row, col, userID, channelID){
     winnerString = checkIfWinnerT(tGame);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 3);
+            database.insertCreditBot(userID,channelID, 3);
         }
         removeInstance(tGame);
     }
@@ -849,7 +893,7 @@ function initBoardT(tGame, userID, channelID){
             tGame.availableCells[i*boardSide+j] = [i,j];
         }
     }
-    // insertCreditBot(userID,channelID,-1);
+    database.insertCreditBot(userID,channelID,-1);
 }
 
 // display the board as a string
@@ -898,7 +942,7 @@ function playConnect4(col, userID, channelID){
     let winnerString = checkIfWinnerC(cGame, [row, col]);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 6);
+            database.insertCreditBot(userID,channelID, 6);
         }
         removeInstance(cGame);
         return "<@!" + userID + ">" + "'s Connect-4 Board:\n\n " + "`"+printBoardC(cGame, userID)+winnerString+"`";
@@ -927,7 +971,7 @@ function playConnect4(col, userID, channelID){
     winnerString = checkIfWinnerC(cGame, [row, col]);
     if(winnerString == "You just won!" || winnerString == "You just lost!" || winnerString == "Tie!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 6);
+            database.insertCreditBot(userID,channelID, 6);
         }
         removeInstance(cGame);
     }
@@ -1094,7 +1138,7 @@ function evalInstanceC(idCheck, channelID){
 }
 
 // initialize members in the game object
-function initBoardC(cGame, userId, channelID){
+function initBoardC(cGame, userID, channelID){
     let i, j;
     for(i = 0; i < 6; i++){
         cGame.board[i] = [];
@@ -1105,7 +1149,7 @@ function initBoardC(cGame, userId, channelID){
     for(i = 0; i < 7; i++){
         cGame.availableCols[i] = i;
     }
-    // insertCreditBot(userID,channelID,-2);
+    database.insertCreditBot(userID,channelID,-2);
 }
 
 // display the current board of the game
@@ -1156,7 +1200,7 @@ function playBlokus(piece, row, col, userID, channelID){
     if(winnerString == "You just won!" || winnerString == "You just lost!"){
         removeInstance(bGame);
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 9);
+            database.insertCreditBot(userID,channelID, 9);
         }
         return "<@!" + userID + ">" + "'s Blokus Board:\n\n   " + "`"+printBoardB(bGame, userID)+"\n"+winnerString+"`";
     }
@@ -1180,7 +1224,7 @@ function playBlokus(piece, row, col, userID, channelID){
     bGame.availablePiecesAtCell = [];
     if(winnerString == "You just won!" || winnerString == "You just lost!"){
         if(winnerString == "You just won!"){
-            // insertCreditBot(userID,channelID, 9);
+            database.insertCreditBot(userID,channelID, 9);
         }
         removeInstance(bGame);
     }
@@ -1366,7 +1410,7 @@ function initBoardB(bGame, userID, channelID){
     bGame.board[9][0] = "x"; // start player move on bottom left
     bGame.board[0][9] = "o"; // start bot move on top right
 
-    // insertCreditBot(userID,channelID,-3);
+    database.insertCreditBot(userID,channelID,-3);
 }
 
 // display the current board of the game
@@ -1443,25 +1487,6 @@ let pieces2 = [
     [14,[0,0],[1,0],[2,0],[1,1],[2,1]],			// 14
     [15,[0,0],[0,-1],[0,-2],[0,-3],[-1,-3]]		// 15
 ];
-//Export for Main file
-module.exports = {
-    games_data : games_data,
-    pairs : pairs,
-    hangman : hangman,
-    pSlots : pSlots,
-    p2048 : p2048,
 
-    // Phong's code begin
-    playTicTacToe: playTicTacToe,
-    evalInstanceT: evalInstanceT,
-    printBoardT: printBoardT,
-    playConnect4: playConnect4,
-    evalInstanceC: evalInstanceC,
-    printBoardC: printBoardC,
-    playBlokus: playBlokus,
-    evalInstanceB: evalInstanceB,
-    printBoardB: printBoardB,
-    // Phong's code end
-};
 
 // Phong's code end

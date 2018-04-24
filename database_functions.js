@@ -4,9 +4,9 @@ var db_bot = require('./db_bot.js');
 moment().format();
 
 var con = mysql.createConnection({
-    host: "",
-    user: "",
-    password: "",
+    host: "localhost",
+    user: "root",
+    password: "JoeHadit2018",
     database: "usersdb",
     timezone: 'utc'
 });
@@ -124,7 +124,8 @@ function removeUserFromDB(userName,userID,channelID){
                 db_bot.sendMessage(userID,channelID,"The data you request for delete does not exist");
             }
             else {
-                db_bot.sendEmbed(userID,channelID,true,0);
+                let id = result[0].id;
+                db_bot.sendEmbed(id,channelID,true,0);
             }
         }
     });
@@ -324,20 +325,6 @@ function updateNewStrikeVal(userName,userID,channelID,newStrikeValue){
     });
 }
 
-/**
- * Return the list of command including their description in a string
- * @return {string} list of all commands and their description
- */
-function helpTable(){
-    let commandList = "__*Type ! in front of all these commands*__\n" +
-        "**daily** - get yourself 200 credits every day (time between must be 24 hours apart)\n" +
-        "**banself** - remove all your records from the database\n" +
-        "**remove userName** - remove the specified **userName** from the database (must have admin access)\n" +
-        "**mark userName** - increase the specified **userName** strike count by 1 (must have admin access)\n" +
-        "**mystrike** - see how many strikes you have\n" +
-        "**credit** - see how many credits you have\n";
-    return commandList;
-}
 
 /**
  * Add the desired amount into the specified user's credit (can be negative to subtract)
@@ -418,11 +405,12 @@ function insertCreditBot(userID,channelID,amount){
             else{
                 let currentCredit = result[0].credit;
                 amount = parseInt(amount);
-                // negative credit
-                if(amount < 0 && Math.abs(amount) > currentCredit){
-                    amount = currentCredit * -1;
+                let ifNegativeAmount = 0;
+                // negative credit convert to possitive
+                if(amount < 0){
+                    ifNegativeAmount = amount *-1;
                 }
-                if(amount == 0){
+                if(ifNegativeAmount > currentCredit){
                     db_bot.sendMessage(userID,channelID,"You do not have enough credit");
                 }
                 else {
@@ -459,7 +447,6 @@ module.exports = {
     increaseStrike: increaseStrike,
     increaseStrikeBot: increaseStrikeBot,
     print_strike: print_strike,
-    helpTable: helpTable,
     insertCreditAmount: insertCreditAmount,
     insertCreditBot: insertCreditBot
 };

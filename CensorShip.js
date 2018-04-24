@@ -59,6 +59,9 @@ function formatMessage(args){
  */
 function banWord(channelID, args){
     let word = formatMessage(args);
+    if(word == null){
+        return;
+    }
     if(!badWordsList.includes(word)){
         bot.sendNotice(channelID,word,false,true);
         badWordsList.push(word);
@@ -77,6 +80,9 @@ function banWord(channelID, args){
  */
 function unBanWord(channelID, args){
     let word = formatMessage(args);
+    if(word == null){
+        return;
+    }
     //when message is currently unbanned
     if(!badWordsList.includes(word)){
         bot.sendNotice(channelID,word,false,false);
@@ -101,7 +107,7 @@ function unBanWord(channelID, args){
  * Checks if a message is in need of censorship
  * Returns index of word in badWordsList if present, -1 otherwise
  * @param {string} message the message to check
- * @return {number} the index of a word in the censor list, -1 otherwise
+ * @return the string that matches or -1 if nothing
  */
 function needsCensor(message){
     let msg = message.toLowerCase().replace(/[.,\/#!$+<>%\^&\*;:{}=\-_`~()?]/g,"");
@@ -109,7 +115,7 @@ function needsCensor(message){
     let i;
     for(i = 0; i < msgSplit.length; i++){
         if(badWordsList.includes(msgSplit[i])){
-            return i;
+            return msgSplit[i];
         }
     }
     return -1;
@@ -126,7 +132,7 @@ function needsCensor(message){
 function censorBot(message, userID, channelID, messageID){
     let censorIndex = needsCensor(message);
     // if there is a message to censor
-    if(censorIndex > -1){
+    if(censorIndex != -1){
         bot.deleteMessage(channelID,messageID);
         // if bad words included, delete the message and send warn
         // admin doesn't get warn but get message delete still :)
@@ -140,31 +146,31 @@ function censorBot(message, userID, channelID, messageID){
 /**
  * Send warning to the user
  * @param {string} userID - the user id to send warning to
- * @param {int} censorIndex - the index of the censored word
+ * @param {int} censorWord - the index of the censored word
  */
-function warn(userID,censorIndex){
+function warn(userID,censorWord){
     let rand = Math.floor(Math.random() * 5);
     switch(rand){
         case 0:
             bot.sendWarnEmbed(userID, 0xF4D03F, ":warning: THIS IS A WARNING :warning:",
-                "Please don't say bad words :upside_down:\nBanned phrase: " + bannedWords[censorIndex],
+                "Please don't say bad words :upside_down:\nBanned phrase: " + censorWord,
             );
         break;
         case 1:
             bot.sendWarnEmbed(userID,0X00ff00,":warning: THIS IS A WARNING :warning:",
-                "No naughty wordies :speak_no_evil:\nBanned phrase: " + badWordsList[censorIndex]);
+                "No naughty wordies :speak_no_evil:\nBanned phrase: " + censorWord);
         break;
         case 2:
             bot.sendWarnEmbed(userID,0xffcc99,":warning: THIS IS A WARNING :warning:",
-                "No one likes a potty mouth :thumbsdown:\nBanned phrase: " + bannedWords[censorIndex]);
+                "No one likes a potty mouth :thumbsdown:\nBanned phrase: " + censorWord);
         break;
         case 3:
             bot.sendWarnEmbed(userID,0x6699ff,":warning: THIS IS A WARNING :warning:",
-                "My heart breaks everytime you swear :broken_heart:\nBanned phrase: " + bannedWords[censorIndex]);
+                "My heart breaks everytime you swear :broken_heart:\nBanned phrase: " + censorWord);
         break;
         case 4:
             bot.sendWarnEmbed(userID,0x33cccc,":warning: THIS IS A WARNING :warning:",
-                "Only losers say things like that :sunglasses:\nBanned phrase: " + bannedWords[censorIndex]);
+                "Only losers say things like that :sunglasses:\nBanned phrase: " + censorWord);
         break;
     }
 }
