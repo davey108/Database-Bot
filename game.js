@@ -557,10 +557,9 @@ function editMessage(c, mid, mess){
 }
 
 function checkSlotWin(final,userID,channelID,amount){
-    /*if(final[1] == true){
+    if(final[1] == true){
         winGame(userID,channelID,amount*3);
-    }*/
-    winGame(userID,channelID,amount*3);
+    }
 }
 
 //Bot calls iteself with args of UserID
