@@ -1,6 +1,7 @@
 const Discord = require('discord.io');
 const adminRoleID = '426481518274150420';
 const serverID = '366786162238554112';
+const unregID = '435994081445937167';
 let auth = require('./auth.json');
 // initialize discord bot
 let bot = new Discord.Client({
@@ -28,6 +29,15 @@ bot.on('ready', function (evt) {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
 });
 
+// Listening for new members
+bot.on('guildMemberAdd', function(member){
+    bot.addToRole({
+        serverID: serverID,
+        userID: member.id,
+        roleID: unregID,
+    });
+});
+
 /*
 Function to mark the bot purpose is to send message while it is on
 @param {string} message - the string to tell the bot .on function is to send message
@@ -50,6 +60,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         switch(cmd) {
             case 'daily':
                 database.getTimeFromDb(user,channelID,userID,database.time_result);
+                bot.removeFromRole({
+                    serverID: serverID,
+                    userID: userID,
+                    roleID: unregID,
+                });
             break;
             case 'banself':
                 database.removeUserFromDB(user,userID,channelID);
@@ -81,63 +96,116 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
             break;
             case 'mystrike':
-                database.print_strike(user,userID,channelID);
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else
+                    database.print_strike(user,userID,channelID);
             break;
             case 'credit':
-                database.getCreditFromDB(database.printCredits,user,userID,channelID);
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else
+                    database.getCreditFromDB(database.printCredits,user,userID,channelID);
             break;
             // game.js blocks starts here--------------------------------------------
             case "pt":
-                let tGame = game.evalInstanceT(userID, channelID);
-                sendMessage(userID,channelID,"'s TicTacToe Board:\n\n   " + "`"+ game.printBoardT(tGame, userID)+"`");
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    let tGame = game.evalInstanceT(userID, channelID);
+                    sendMessage(userID, channelID, "'s TicTacToe Board:\n\n   " + "`" + game.printBoardT(tGame, userID) + "`");
+                }
             break;
             case "pc":
-                let cGame = game.evalInstanceC(userID, channelID);
-                sendMessage(userID,channelID,"'s Connect-4 Board:\n\n " + "`"+game.printBoardC(cGame, userID)+"`");
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    let cGame = game.evalInstanceC(userID, channelID);
+                    sendMessage(userID, channelID, "'s Connect-4 Board:\n\n " + "`" + game.printBoardC(cGame, userID) + "`");
+                }
             break;
             case "pb":
-                let bGame = game.evalInstanceB(userID, channelID);
-                sendMessage(userID,channelID,"'s Blokus Board:\n\n   " + "`"+game.printBoardB(bGame, userID)+"`");
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    let bGame = game.evalInstanceB(userID, channelID);
+                    sendMessage(userID, channelID, "'s Blokus Board:\n\n   " + "`" + game.printBoardB(bGame, userID) + "`");
+                }
             break;
             case 't':
-                bot.sendMessage({
-                    to: channelID,
-                    message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID,channelID),
-                });
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playTicTacToe(parseInt(args[0]), parseInt(args[1]), userID, channelID),
+                    });
+                }
             break;
             case "c":
-                bot.sendMessage({
-                    to: channelID,
-                    message: game.playConnect4(parseInt(args[0]), userID, channelID),
-                });
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playConnect4(parseInt(args[0]), userID, channelID),
+                    });
+                }
             break;
             case "b":
-                bot.sendMessage({
-                    to: channelID,
-                    message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID,channelID),
-                });
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.playBlokus(parseInt(args[0]), parseInt(args[1]), parseInt(args[2]), userID, channelID),
+                    });
+                }
             break;
             // game.js blocks ends here------------------------------------
             // gameTwo.js blocks starts here -------------------------------------------------
             case 'hangman':
-                bot.sendMessage({
-                    to: channelID,
-                    message: game.hangman(userID,args,channelID),
-                });
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.hangman(userID, args, channelID),
+                    });
+                }
             break;
             case '2048':
-                bot.sendMessage({
-                    to: channelID,
-                    message: game.p2048(userID,args,channelID),
-                });
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
+                }
+                else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: game.p2048(userID, args, channelID),
+                    });
+                }
             break;
             case 'slots':
-                let amount = 1;
-                let bet = args[0];
-                if(bet != null){
-                    amount = parseInt(bet);
+                if(checkRegister(userID)){
+                    sendMessage(userID,channelID, "You must register with !daily before using this command");
                 }
-                game.pSlots(userID, channelID, amount);
+                else {
+                    let amount = 1;
+                    let bet = args[0];
+                    if (bet != null) {
+                        amount = parseInt(bet);
+                    }
+                    game.pSlots(userID, channelID, amount);
+                }
 
             break;
             // gameTwo.js blocks end here------------------------------------------------------
@@ -172,11 +240,24 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             default:
+                if(checkRegister(userID)){
+                    bot.deleteMessage({
+                        channelID: channelID,
+                        messageID: evt.d.id,
+                    });
+                }
                 censor.censorCheck(message.substring(1),userID,channelID,evt.d.id);
                 sendMessage(userID,channelID,"No command matching! Type !help for list of commands");
          }
      }
      else {
+        // delete a user message if they are not registered...
+        if(checkRegister(userID)){
+            bot.deleteMessage({
+                channelID: channelID,
+                messageID: evt.d.id,
+            });
+        }
         // check so that the bot doesn't listen to itself
         if(bot.id != userID) {
             censor.censorCheck(message,userID,channelID,evt.d.id);
@@ -385,7 +466,7 @@ function helpTable(){
         "**pb** - print the blockus board\n" +
         "**hangman** <letter> - play hangman with the letter to guess\n" +
         "**2048** <direction> - play 2048 with a direction within this list: {up,down,left,right}\n" +
-        "**slots** <amount> - play slots with an amount to bet\n";
+        "**slots** - play slots  to bet\n";
     return commandList;
 }
 
@@ -417,4 +498,33 @@ function promiseEdit(channelID,messageID,message){
             resolve(result);
         });
     })
+}
+
+/**
+ * Check if the user has registered with !daily
+ * @param userID - the user id to check
+ * @return boolean - true if the user is not registered, false otherwise
+ */
+function checkRegister(userID){
+    let isRegistered = bot.servers[serverID].members[userID.toString()].roles.includes(unregID);
+    return isRegistered;
+}
+
+/**
+ * Add all other members to unreg roles except bot and admin
+ */
+function addAllUnreg(){
+    for(let user_id in bot.servers[serverID].members){
+        console.log("adding...");
+        if(bot.servers[serverID].members[user_id.toString()].roles.length == 0 && bot.users[user_id.toString()].bot == false){
+            console.log("adding: " + bot.users[user_id.toString()].username + " to unreg");
+            bot.addToRole({
+                serverID: serverID,
+                userID: user_id,
+                roleID: unregID,
+            });
+        }
+
+    }
+    console.log("Finish");
 }

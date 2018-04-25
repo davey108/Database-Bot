@@ -502,9 +502,20 @@ function slots(){
     let win = false;
     if(board[0] == board[1] && board[1] == board[2]){
         win = true;
-    }if(board[3] == board[4] && board[4] == board[5]){
+    }
+    if(board[3] == board[4] && board[4] == board[5]){
         win = true;
-    }if(board[6] == board[7] && board[7] == board[8]){
+    }
+    if(board[6] == board[7] && board[7] == board[8]){
+        win = true;
+    }
+    else if(board[0] == board[5]){
+        win = true;
+    }
+    else if(board[2] == board[7]){
+        win = true;
+    }
+    else if(board[3] == board[8]){
         win = true;
     }
     return [board, win];
