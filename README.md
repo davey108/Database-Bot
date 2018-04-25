@@ -29,3 +29,8 @@ Link to download can be found here: https://www.jetbrains.com/webstorm/download/
 2. Run <code>db_bot.js</code>. If the bot has sucessfully go online, there will be a message "Logged on...." otherwise, you might have to reinstall some dependencies or check code base or you can report the issue here on Git. <br>
 **Note**: The command to run the files from Node JS is: node *filename.extension* <br>
 **Note 2**: For any dependencies installation, you must be inside the project folder before running npm. The reason why is npm will look for a <code>node_modules</code> file to install into or it will make a new one on that directory. 
+----
+# Special Thanks To:
+1. Izy521 for Discord.io library. Without this, this project wouldn't have been possible. Check out the library here (soon to be update to new version with spicy promise/async support) : https://github.com/izy521/discord.io
+2. StackOverflow for JavaScript help and pieces of codes
+3. Discord.io people for guiding, help on understanding the discord.io library itself and many other tricky/miscellanious tasks to make this bot a successful project
