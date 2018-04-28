@@ -23,11 +23,15 @@ bot.on('message', (user,userID,channelID,message,evt) => {
 	}
 });
 
+/**
+ * Run the test
+ */
 function runTests(){
 	await testMix();
 	await testGood();
 	await testNotRegistered();
 	await testTwoSlots();
+	await testAdmin();
 }
 
 /**
@@ -115,6 +119,26 @@ let testTwoSlots = () => {
 	});
 }
 
+/**
+ * This test runs as if the bot has an admin role, so it 
+ * can do more modification to the data 
+ */
+let testAdmin = () => {
+	return new Promise((resolve, reject) => {
+		reSet();
+		input.push('daily');
+		input.push('credit');  // expect 200
+		input.push('mystrike'); // expect 0
+		input.push('gcredit ' + bot.id + ' 1000');
+		input.push('credit'); // expect 1200
+		input.push('mark ' + bot.username);
+		input.push('mystrike'); // expect 1
+		input.push('gcredit ' + bot.id + ' -1200');
+		input.push('credit'); // expect 0
+		getOutput();
+		resolve(input);		
+	});
+}
 /**
  * Run to get output from database bot
  */
